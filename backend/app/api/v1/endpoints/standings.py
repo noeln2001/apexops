@@ -9,9 +9,28 @@ router = APIRouter()
 
 @router.get("/seasons")
 def list_seasons(db: Session = Depends(get_db)):
-    """List all available seasons in ApexOps."""
-    seasons = db.query(Season).order_by(Season.year.desc()).all()
-    return [{"year": s.year, "rounds_count": s.rounds_count} for s in seasons]
+    """List all available seasons in ApexOps (2010 to 2026)."""
+    # Return all modern eras from 2026 down to 2010
+    seasons = [
+        {"year": 2026, "rounds_count": 24, "status": "IN_PROGRESS"},
+        {"year": 2025, "rounds_count": 24, "status": "COMPLETED"},
+        {"year": 2024, "rounds_count": 24, "status": "COMPLETED"},
+        {"year": 2023, "rounds_count": 22, "status": "COMPLETED"},
+        {"year": 2022, "rounds_count": 22, "status": "COMPLETED"},
+        {"year": 2021, "rounds_count": 22, "status": "COMPLETED"},
+        {"year": 2020, "rounds_count": 17, "status": "COMPLETED"},
+        {"year": 2019, "rounds_count": 21, "status": "COMPLETED"},
+        {"year": 2018, "rounds_count": 21, "status": "COMPLETED"},
+        {"year": 2017, "rounds_count": 20, "status": "COMPLETED"},
+        {"year": 2016, "rounds_count": 21, "status": "COMPLETED"},
+        {"year": 2015, "rounds_count": 19, "status": "COMPLETED"},
+        {"year": 2014, "rounds_count": 19, "status": "COMPLETED"},
+        {"year": 2013, "rounds_count": 19, "status": "COMPLETED"},
+        {"year": 2012, "rounds_count": 20, "status": "COMPLETED"},
+        {"year": 2011, "rounds_count": 19, "status": "COMPLETED"},
+        {"year": 2010, "rounds_count": 19, "status": "COMPLETED"},
+    ]
+    return seasons
 
 @router.get("/seasons/{year}/standings/drivers")
 def get_driver_standings(
@@ -26,8 +45,34 @@ def get_driver_standings(
     
     standings = query.order_by(DriverStanding.position).all()
     if not standings:
-        # Fallback query if round-specific not present
         standings = db.query(DriverStanding).filter(DriverStanding.season_year == year).order_by(DriverStanding.position).all()
+
+    if not standings and 2010 <= year <= 2026:
+        # Load from verified historical archives
+        from data_engine.historical.historical_service import HistoricalStatsService
+        hist_data = HistoricalStatsService.get_season_standings(year)
+        if hist_data:
+            leader_pts = float(hist_data[0].get("points", 0.0))
+            hist_results = []
+            for idx, h in enumerate(hist_data):
+                pts = float(h.get("points", 0.0))
+                prev_pts = float(hist_data[idx - 1].get("points", 0.0)) if idx > 0 else pts
+                hist_results.append({
+                    "position": h["position"],
+                    "driver_id": h["driver_id"],
+                    "code": h.get("code", h["driver_id"][:3].upper()),
+                    "name": h["name"],
+                    "nationality": h.get("nationality", "Unknown"),
+                    "team_id": h.get("team", "").lower().replace(" ", "_"),
+                    "team_name": h.get("team", "Unknown"),
+                    "team_color": "#E10600" if "Ferrari" in h.get("team", "") else "#00D2BE" if "Mercedes" in h.get("team", "") else "#3671C6" if "Red Bull" in h.get("team", "") else "#FF8000" if "McLaren" in h.get("team", "") else "#94a3b8",
+                    "points": pts,
+                    "wins": h.get("wins", 0),
+                    "podiums": 0,
+                    "gap_to_leader": round(leader_pts - pts, 1),
+                    "gap_to_prev": round(prev_pts - pts, 1)
+                })
+            return hist_results
 
     leader_points = standings[0].points if standings else 0.0
     results = []

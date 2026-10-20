@@ -59,6 +59,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <option value={2026} className="bg-[#12151b]">2026 (Active)</option>
             <option value={2025} className="bg-[#12151b]">2025</option>
             <option value={2024} className="bg-[#12151b]">2024</option>
+            <option value={2023} className="bg-[#12151b]">2023</option>
+            <option value={2022} className="bg-[#12151b]">2022</option>
+            <option value={2021} className="bg-[#12151b]">2021</option>
+            <option value={2020} className="bg-[#12151b]">2020</option>
+            <option value={2019} className="bg-[#12151b]">2019</option>
+            <option value={2018} className="bg-[#12151b]">2018</option>
+            <option value={2017} className="bg-[#12151b]">2017</option>
+            <option value={2016} className="bg-[#12151b]">2016</option>
+            <option value={2015} className="bg-[#12151b]">2015</option>
+            <option value={2014} className="bg-[#12151b]">2014</option>
+            <option value={2013} className="bg-[#12151b]">2013</option>
+            <option value={2012} className="bg-[#12151b]">2012</option>
+            <option value={2011} className="bg-[#12151b]">2011</option>
+            <option value={2010} className="bg-[#12151b]">2010</option>
           </select>
         </div>
 

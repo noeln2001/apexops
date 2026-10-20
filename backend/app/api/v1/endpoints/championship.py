@@ -160,12 +160,23 @@ def compare_drivers_head_to_head(
     processed = ChampionshipEligibilityEngine.calculate_eligibility(raw_standings)
     return DriverComparisonEngine.compare_drivers(processed, driver_a_id=driver_a, driver_b_id=driver_b)
 
+@router.get("/championship/history/champions")
+def get_historical_champions_list():
+    """Returns the full chronological roll of honor of World Champions from 2010 to 2026."""
+    from data_engine.historical.historical_service import HistoricalStatsService
+    return HistoricalStatsService.get_champions_summary()
+
 @router.get("/championship/history/{season}")
 def get_historical_season_championship(season: int, db: Session = Depends(get_db)):
-    """Returns official historical standings and title winner for past seasons."""
-    if season > 2025:
-        raise HTTPException(status_code=400, detail="Use /championship/tracker for active 2026 season.")
+    """Returns official historical standings and title winner for past seasons (2010–2025)."""
+    from data_engine.historical.historical_service import HistoricalStatsService, HISTORICAL_CHAMPIONS
 
+    if season < 2010 or season > 2026:
+        raise HTTPException(status_code=400, detail="Historical records available from 2010 to 2026.")
+
+    champ_meta = next((c for c in HISTORICAL_CHAMPIONS if c["year"] == season), None)
+
+    # Check database first
     query = text("""
         SELECT 
             ds.position,
@@ -183,44 +194,29 @@ def get_historical_season_championship(season: int, db: Session = Depends(get_db
     """)
     rows = db.execute(query, {"season": season}).fetchall()
 
-    if not rows:
-        # Provide curated historical benchmark if past year not seeded in database
-        benchmarks = {
-            2025: [
-                {"position": 1, "driver_id": "max_verstappen", "name": "Max Verstappen", "team": "Red Bull Racing", "points": 437.0, "wins": 9},
-                {"position": 2, "driver_id": "norris", "name": "Lando Norris", "team": "McLaren", "points": 374.0, "wins": 4},
-                {"position": 3, "driver_id": "leclerc", "name": "Charles Leclerc", "team": "Ferrari", "points": 356.0, "wins": 3},
-                {"position": 4, "driver_id": "piastri", "name": "Oscar Piastri", "team": "McLaren", "points": 292.0, "wins": 2},
-                {"position": 5, "driver_id": "sainz", "name": "Carlos Sainz", "team": "Ferrari", "points": 290.0, "wins": 2}
-            ],
-            2024: [
-                {"position": 1, "driver_id": "max_verstappen", "name": "Max Verstappen", "team": "Red Bull Racing", "points": 429.0, "wins": 9},
-                {"position": 2, "driver_id": "norris", "name": "Lando Norris", "team": "McLaren", "points": 349.0, "wins": 3},
-                {"position": 3, "driver_id": "leclerc", "name": "Charles Leclerc", "team": "Ferrari", "points": 341.0, "wins": 3}
-            ],
-            2023: [
-                {"position": 1, "driver_id": "max_verstappen", "name": "Max Verstappen", "team": "Red Bull Racing", "points": 575.0, "wins": 19},
-                {"position": 2, "driver_id": "perez", "name": "Sergio Perez", "team": "Red Bull Racing", "points": 285.0, "wins": 2},
-                {"position": 3, "driver_id": "hamilton", "name": "Lewis Hamilton", "team": "Mercedes", "points": 234.0, "wins": 0}
-            ]
+    if rows:
+        history_standings = [
+            {"position": r[0], "driver_id": r[1], "name": r[2], "team": str(r[3]).replace("_", " ").title(), "points": float(r[4]), "wins": int(r[5])}
+            for r in rows
+        ]
+        return {
+            "season": season,
+            "status": "COMPLETED" if season < 2026 else "IN_PROGRESS",
+            "champion": history_standings[0],
+            "metadata": champ_meta,
+            "standings": history_standings
         }
-        if season in benchmarks:
-            data = benchmarks[season]
-            return {
-                "season": season,
-                "status": "COMPLETED",
-                "champion": data[0],
-                "standings": data
-            }
+
+    # Fetch verified historical standings via HistoricalStatsService
+    standings = HistoricalStatsService.get_season_standings(season)
+    if not standings:
         raise HTTPException(status_code=404, detail=f"Historical data for season {season} not available")
 
-    history_standings = [
-        {"position": r[0], "driver_id": r[1], "name": r[2], "team": str(r[3]).title(), "points": float(r[4]), "wins": int(r[5])}
-        for r in rows
-    ]
     return {
         "season": season,
-        "status": "COMPLETED",
-        "champion": history_standings[0],
-        "standings": history_standings
+        "status": "COMPLETED" if season < 2026 else "IN_PROGRESS",
+        "champion": standings[0] if standings else None,
+        "metadata": champ_meta,
+        "standings": standings
     }
+

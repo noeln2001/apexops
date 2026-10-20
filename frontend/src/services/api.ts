@@ -192,3 +192,9 @@ export async function fetchHistoricalChampionship(season: number): Promise<any> 
   return res.json();
 }
 
+export async function fetchHistoricalChampionsSummary(): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/championship/history/champions`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
