@@ -1,5 +1,7 @@
 # APEXOPS — Motorsport Technology & Intelligence Platform
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success?style=for-the-badge&logo=githubpages&logoColor=white)](https://noeln2001.github.io/apexops/)
+
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-19.3-61DAFB.svg?logo=react)](https://react.dev)
@@ -10,6 +12,8 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 [![GitHub Repo](https://img.shields.io/badge/GitHub-noeln2001%2Fapexops-181717.svg?logo=github)](https://github.com/noeln2001/apexops)
 
+> 🌐 **Live Web Application (Globally Accessible):** [https://noeln2001.github.io/apexops/](https://noeln2001.github.io/apexops/)
+> 
 > **Production-Grade Formula 1 Data Engineering, Championship Title Intelligence, Distance-Aligned Telemetry Analytics, Web-Wide UHD Image Discovery with Computer Vision Quality Verification, and Trackside IT Operations.**
 
 ---

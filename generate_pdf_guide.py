@@ -173,6 +173,7 @@ def create_guide_pdf(filename="ApexOps_Platform_User_Guide.pdf"):
     # Meta Table
     meta_data = [
         [Paragraph("<b>Author / Platform Architect:</b>", body_style), Paragraph("noeln2001", body_style)],
+        [Paragraph("<b>Live Global Deployment:</b>", body_style), Paragraph("https://noeln2001.github.io/apexops/", body_style)],
         [Paragraph("<b>Repository:</b>", body_style), Paragraph("https://github.com/noeln2001/apexops", body_style)],
         [Paragraph("<b>Championship Season:</b>", body_style), Paragraph("2026 FIA Formula One World Championship (Archive 2010–2026)", body_style)],
         [Paragraph("<b>Championship Focus:</b>", body_style), Paragraph("Max Verstappen (#33 / #1) Title Clinch Scenarios Engine", body_style)],
