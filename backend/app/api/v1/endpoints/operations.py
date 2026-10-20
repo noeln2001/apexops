@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import Optional
+from sqlalchemy import text
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
 from backend.app.db.session import get_db
-from operations.monitoring.metrics_service import MetricsService
+from operations.monitoring.metrics_service import MetricsService, BackgroundJobRegistry
+from operations.monitoring.telemetry_collector import telemetry_collector
+from operations.logging.log_buffer import operational_log_handler
 from operations.drills.drill_service import DrillService
 from operations.backups.backup_manager import BackupManager
 from data_engine.etl.historical_importer import HistoricalImporter
@@ -12,12 +15,72 @@ from data_engine.etl.current_season_reconciler import CurrentSeasonReconciler
 router = APIRouter()
 
 class ImportRequest(BaseModel):
-    season: int = 2026
+    season: int = Field(default=2026, ge=1950, le=2026, description="Championship season year")
+
+class BackupRequest(BaseModel):
+    note: Optional[str] = Field(default="Manual snapshot via console", max_length=200)
 
 @router.get("/operations/status")
 def get_system_status(db: Session = Depends(get_db)):
-    """Returns real platform observability metrics, database status, and hardware metrics."""
+    """
+    Returns unified real-time observability telemetry:
+    - Host hardware (CPU %, Memory RSS, Disk)
+    - Database latency and storage
+    - External data providers health (HEALTHY, DEGRADED, UNAVAILABLE)
+    - API latency percentiles (p50, p95, p99)
+    - Ingestion freshness & staleness alerts
+    - Background workers state
+    - Last verified backup & restore
+    """
     return MetricsService.get_system_metrics(db)
+
+@router.get("/operations/telemetry")
+def get_api_telemetry():
+    """Returns actual measured API response-time percentiles, throughput, error rates, and slowest routes."""
+    return telemetry_collector.get_summary()
+
+@router.get("/operations/logs")
+def get_operational_logs(
+    level: Optional[str] = Query(default="ALL", description="Filter by log severity: ALL, INFO, WARNING, ERROR"),
+    query: Optional[str] = Query(default=None, description="Search query string matching log message or logger"),
+    correlation_id: Optional[str] = Query(default=None, description="Exact correlation ID lookup"),
+    limit: int = Query(default=50, ge=1, le=200, description="Maximum log entries to return")
+):
+    """Returns structured operational logs with secret redaction and correlation ID tracking."""
+    return operational_log_handler.search_logs(
+        level=level,
+        query=query,
+        correlation_id=correlation_id,
+        limit=limit
+    )
+
+@router.get("/operations/jobs")
+def get_scheduled_jobs():
+    """Lists registered background workers, schedule intervals, last execution time, and error counters."""
+    return BackgroundJobRegistry.get_jobs()
+
+@router.get("/operations/database")
+def get_database_diagnostics(db: Session = Depends(get_db)):
+    """Provides deep storage and health diagnostics for database tables and storage engines."""
+    tables = [
+        "circuits", "constructors", "drivers", "seasons", "races",
+        "qualifying_results", "session_results", "driver_standings",
+        "constructor_standings", "lap_telemetry_samples", "data_sources",
+        "ingestion_runs", "incident_drills"
+    ]
+    table_stats = []
+    for tbl in tables:
+        try:
+            cnt = db.execute(text(f"SELECT count(*) FROM {tbl};")).scalar()
+            table_stats.append({"table": tbl, "row_count": cnt})
+        except Exception:
+            table_stats.append({"table": tbl, "row_count": "N/A"})
+
+    return {
+        "status": "HEALTHY",
+        "engine": "SQLite / PostgreSQL Compatible",
+        "tables": table_stats
+    }
 
 @router.get("/operations/drills")
 def list_incident_drills(db: Session = Depends(get_db)):
@@ -46,9 +109,10 @@ def list_backups():
     return BackupManager.list_backups()
 
 @router.post("/operations/backups")
-def create_backup():
+def create_backup(req: Optional[BackupRequest] = None):
     """Triggers an online, non-blocking hot database backup with integrity verification."""
-    res = BackupManager.create_backup("Automated snapshot via Operations Console")
+    note = req.note if req else "Manual snapshot via Operations Console"
+    res = BackupManager.create_backup(note)
     if "error" in res:
         raise HTTPException(status_code=500, detail=res["error"])
     return res

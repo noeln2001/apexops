@@ -187,3 +187,168 @@ export interface SystemMetrics {
     open_quality_issues: number;
   };
 }
+
+export interface ChampionshipDriver {
+  position: number;
+  driver_id: string;
+  name: string;
+  code: string;
+  team: string;
+  current_points: number;
+  wins: number;
+  podiums: number;
+  dnfs: number;
+  points_gap_to_leader: number;
+  points_gap_to_ahead: number;
+  points_gap_to_behind: number;
+  max_achievable_points: number;
+  max_possible_position: number;
+  min_points_needed_to_lead: number;
+  status: 'CLINCHED' | 'CONTENDER' | 'ELIMINATED';
+  is_clinched: boolean;
+  is_eliminated: boolean;
+  is_contender: boolean;
+  eliminated_at?: string;
+}
+
+export interface ChampionshipSummary {
+  season: number;
+  reference_anchor: string;
+  remaining_rounds: number;
+  remaining_sprints: number;
+  max_available_points_per_driver: number;
+  total_drivers: number;
+  active_contenders_count: number;
+  eliminated_drivers_count: number;
+  leader?: ChampionshipDriver;
+  contenders_list: string[];
+}
+
+export interface ChampionshipRemainingRound {
+  round: number;
+  name: string;
+  circuit_name: string;
+  date: string;
+  has_sprint: boolean;
+  max_gp_points: number;
+  max_sprint_points: number;
+}
+
+export interface ChampionshipTrackerData {
+  season: number;
+  reference_date: string;
+  selected_driver: ChampionshipDriver;
+  summary: ChampionshipSummary;
+  remaining_calendar: ChampionshipRemainingRound[];
+  standings: ChampionshipDriver[];
+  data_provenance: {
+    source: string;
+    last_synced: string;
+    is_stale: boolean;
+    validation_status: string;
+  };
+}
+
+export interface TitleScenario {
+  id: string;
+  title: string;
+  category: 'BEST_CASE' | 'TACTICAL_SWING' | 'RIVAL_MISFORTUNE' | 'CONSISTENCY' | 'ELIMINATION_RISK' | 'CHAOS_EVENT' | 'MATHEMATICAL_BOUNDARY';
+  description: string;
+  target_starting_points: number;
+  target_gained_points: number;
+  target_final_points: number;
+  leader_starting_points: number;
+  leader_assumed_gain: number;
+  leader_final_points: number;
+  resulting_points_difference: number;
+  target_wins_championship: boolean;
+  remains_eligible: boolean;
+  explanation: string;
+}
+
+export interface TitleScenariosResponse {
+  target_driver: ChampionshipDriver;
+  leader: ChampionshipDriver;
+  starting_deficit: number;
+  remaining_points_available: number;
+  survival_cushion_points: number;
+  scenarios_count: number;
+  scenarios: TitleScenario[];
+}
+
+export interface ProjectedStanding {
+  driver_id: string;
+  name: string;
+  code: string;
+  team: string;
+  starting_position: number;
+  projected_position: number;
+  position_change: number;
+  starting_points: number;
+  projected_points: number;
+  points_gained: number;
+  projected_wins: number;
+}
+
+export interface InteractiveSimulationResult {
+  status: string;
+  champion: ProjectedStanding;
+  projected_standings: ProjectedStanding[];
+  rounds_simulated: number;
+}
+
+export interface MonteCarloDriverResult {
+  driver_id: string;
+  name: string;
+  code: string;
+  team: string;
+  current_points: number;
+  championship_prob_pct: number;
+  top3_prob_pct: number;
+  expected_final_points: number;
+  points_std_dev: number;
+  expected_championship_position: number;
+  sample_points_distribution: number[];
+}
+
+export interface MonteCarloResponse {
+  iterations: number;
+  random_seed?: number;
+  execution_duration_sec: number;
+  remaining_rounds: number;
+  assumptions: string[];
+  drivers: MonteCarloDriverResult[];
+}
+
+export interface DriverComparisonData {
+  driver_a: {
+    id: string;
+    name: string;
+    team: string;
+    position: number;
+    points: number;
+    wins: number;
+    podiums: number;
+    max_achievable: number;
+    status: string;
+  };
+  driver_b: {
+    id: string;
+    name: string;
+    team: string;
+    position: number;
+    points: number;
+    wins: number;
+    podiums: number;
+    max_achievable: number;
+    status: string;
+  };
+  points_difference: number;
+  ahead_driver_id: string;
+  remaining_rounds: number;
+  remaining_sprints: number;
+  required_point_swing_per_round: number;
+  races_needed_at_10pt_swing: number;
+  tactical_analysis: string;
+}
+

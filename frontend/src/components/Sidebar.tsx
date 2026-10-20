@@ -20,6 +20,7 @@ import {
 
 export type NavView =
   | 'overview'
+  | 'championship'
   | 'standings'
   | 'weekend'
   | 'drivers'
@@ -47,6 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onSelectView }) =
       label: 'INTELLIGENCE',
       items: [
         { id: 'overview' as NavView, label: 'Overview Dashboard', icon: LayoutDashboard },
+        { id: 'championship' as NavView, label: 'Championship Tracker', icon: Trophy, badge: 'VER 33' },
         { id: 'standings' as NavView, label: 'Championship Standings', icon: Trophy },
         { id: 'weekend' as NavView, label: 'Race Weekend Centre', icon: Flag },
         { id: 'drivers' as NavView, label: 'Driver Explorer', icon: Users },

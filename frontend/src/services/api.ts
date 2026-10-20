@@ -146,3 +146,49 @@ export async function testIsolatedRestore(filename: string): Promise<any> {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+// Championship Tracker & Max Verstappen Scenarios API Client
+export async function fetchChampionshipTracker(driverId: string = 'max_verstappen', season: number = 2026): Promise<any> {
+  const res = await fetch(`${API_BASE}/championship/tracker?driver_id=${driverId}&season=${season}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function fetchTitleScenarios(driverId: string = 'max_verstappen'): Promise<any> {
+  const res = await fetch(`${API_BASE}/championship/scenarios?driver_id=${driverId}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function simulateInteractiveScenario(payload: any): Promise<any> {
+  const res = await fetch(`${API_BASE}/championship/simulate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function runMonteCarloSimulation(payload: any): Promise<any> {
+  const res = await fetch(`${API_BASE}/championship/monte-carlo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function fetchDriverComparison(driverA: string = 'max_verstappen', driverB: string = 'antonelli'): Promise<any> {
+  const res = await fetch(`${API_BASE}/championship/comparison?driver_a=${driverA}&driver_b=${driverB}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function fetchHistoricalChampionship(season: number): Promise<any> {
+  const res = await fetch(`${API_BASE}/championship/history/${season}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+

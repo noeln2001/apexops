@@ -9,6 +9,7 @@ from backend.app.api.v1.endpoints import (
     telemetry,
     strategy,
     simulations,
+    championship,
     news,
     operations,
     exports
@@ -17,6 +18,7 @@ from backend.app.api.v1.endpoints import (
 api_router = APIRouter()
 
 api_router.include_router(overview.router, tags=["Overview"])
+api_router.include_router(championship.router, tags=["Championship Tracker & Max Scenarios"])
 api_router.include_router(standings.router, tags=["Standings"])
 api_router.include_router(drivers.router, tags=["Drivers"])
 api_router.include_router(constructors.router, tags=["Constructors"])

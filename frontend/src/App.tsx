@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Sidebar, NavView } from './components/Sidebar';
 import { OverviewView } from './views/OverviewView';
+import { ChampionshipTrackerView } from './views/ChampionshipTrackerView';
 import { StandingsView } from './views/StandingsView';
 import { WeekendCentreView } from './views/WeekendCentreView';
 import { DriversView } from './views/DriversView';
@@ -70,6 +71,7 @@ export function App() {
                 onNavigate={(v) => setCurrentView(v)}
               />
             )}
+            {currentView === 'championship' && <ChampionshipTrackerView />}
             {currentView === 'standings' && <StandingsView season={season} />}
             {currentView === 'weekend' && <WeekendCentreView season={season} />}
             {currentView === 'drivers' && <DriversView />}
