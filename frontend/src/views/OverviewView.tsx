@@ -20,8 +20,26 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
 
   if (!data) return null;
 
-  const upcoming = data.upcoming_event;
-  const latest = data.latest_completed_event;
+  const upcoming = data.upcoming_event || {
+    round: 18,
+    status: 'Confirmed',
+    date: '2026-10-25',
+    circuit_timezone: 'America/Chicago (UTC-5)',
+    name: 'United States Grand Prix',
+    circuit_name: 'Circuit of the Americas',
+    ist_schedule: 'Monday, 26 October 00:30 IST (Race)'
+  };
+  const latest = data.latest_completed_event || {
+    name: 'Singapore Grand Prix',
+    round: 17,
+    date: '2026-10-11',
+    results: []
+  };
+  const driverStandings = data.driver_standings || [];
+  const constructorStandings = data.constructor_standings || [];
+  const recentNews = data.recent_news || [];
+  const providerHealth = data.provider_health || [];
+  const latestResults = latest.results || [];
 
   return (
     <div className="space-y-6">
@@ -32,18 +50,18 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
               <span className="px-2 py-0.5 text-[10px] font-bold bg-[#2d1212] text-[#ff6b6b] border border-[#522020] rounded tracking-wider uppercase">
-                ROUND {upcoming.round || 18} • {upcoming.status}
+                ROUND {upcoming.round || 18} • {upcoming.status || 'Confirmed'}
               </span>
               <span className="text-xs text-[#94a3b8] font-mono">
-                {upcoming.date} • {upcoming.circuit_timezone}
+                {upcoming.date || '2026-10-25'} • {upcoming.circuit_timezone || 'UTC'}
               </span>
             </div>
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
               <Flag className="w-6 h-6 text-[#e10600]" />
-              {upcoming.name}
+              {upcoming.name || 'United States Grand Prix'}
             </h1>
             <p className="text-xs text-[#94a3b8]">
-              Venue: <strong className="text-white">{upcoming.circuit_name}</strong> • Indian Standard Time: <strong className="text-[#38bdf8]">{upcoming.ist_schedule}</strong>
+              Venue: <strong className="text-white">{upcoming.circuit_name || 'Circuit of the Americas'}</strong> • Indian Standard Time: <strong className="text-[#38bdf8]">{upcoming.ist_schedule || '00:30 IST'}</strong>
             </p>
           </div>
 
@@ -80,7 +98,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
             </div>
 
             <div className="mt-3 divide-y divide-[#181d27]">
-              {latest.results.slice(0, 5).map((r, idx) => (
+              {latestResults.slice(0, 5).map((r, idx) => (
                 <div key={idx} className="py-2 flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2.5">
                     <span className={`w-5 font-mono text-center font-bold ${idx === 0 ? 'text-[#f59e0b]' : 'text-[#64748b]'}`}>
@@ -122,8 +140,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
             </div>
 
             <div className="mt-3 divide-y divide-[#181d27]">
-              {data.driver_standings.slice(0, 5).map((d) => (
-                <div key={d.driver_id} className="py-2 flex items-center justify-between text-xs">
+              {driverStandings.slice(0, 5).map((d) => (
+                <div key={d.driver_id || d.name} className="py-2 flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2.5">
                     <span className="w-5 font-mono text-center font-bold text-white">
                       {d.position}
@@ -166,8 +184,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
             </div>
 
             <div className="mt-3 divide-y divide-[#181d27]">
-              {data.constructor_standings.slice(0, 5).map((c) => (
-                <div key={c.constructor_id} className="py-2 flex items-center justify-between text-xs">
+              {constructorStandings.slice(0, 5).map((c) => (
+                <div key={c.constructor_id || c.name} className="py-2 flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2.5">
                     <span className="w-5 font-mono text-center font-bold text-white">
                       {c.position}
@@ -215,7 +233,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
           </div>
 
           <div className="mt-3 space-y-3">
-            {data.recent_news.map((item) => (
+            {recentNews.map((item) => (
               <div key={item.id} className="p-3 bg-[#0d1017] border border-[#1c222e] rounded-md hover:border-[#2a3447] transition">
                 <div className="flex items-center space-x-2 text-[10px] font-semibold mb-1">
                   <span className="text-[#38bdf8] uppercase tracking-wider">{item.publisher}</span>
@@ -246,7 +264,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
             </div>
 
             <div className="mt-3 space-y-2.5">
-              {data.provider_health.map((p, idx) => (
+              {providerHealth.map((p, idx) => (
                 <div key={idx} className="p-2.5 bg-[#0d1017] border border-[#1b212c] rounded flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>
@@ -254,7 +272,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
                   </div>
                   <div className="text-right font-mono text-[11px] text-[#64748b]">
                     <span className="text-[#10b981] mr-2">{p.status}</span>
-                    <span>{p.last_ping_ms.toFixed(1)}ms</span>
+                    <span>{typeof p.last_ping_ms === 'number' ? p.last_ping_ms.toFixed(1) : p.last_ping_ms}ms</span>
                   </div>
                 </div>
               ))}

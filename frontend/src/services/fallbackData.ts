@@ -2,50 +2,103 @@
 export const FALLBACK_OVERVIEW = {
   season: 2026,
   reference_date: "2026-10-20",
-  last_race: {
-    round: 17,
-    name: "Singapore Grand Prix",
-    circuit: "Marina Bay Street Circuit",
-    date: "2026-10-11",
-    winner: { name: "Lando Norris", team: "McLaren", time: "1:44:42.568" },
-    podium: [
-      { position: 1, driver: "Lando Norris", team: "McLaren" },
-      { position: 2, driver: "Max Verstappen", team: "Red Bull Racing" },
-      { position: 3, driver: "Oscar Piastri", team: "McLaren" }
-    ]
-  },
-  next_race: {
+  upcoming_event: {
+    race_id: "2026_18",
     round: 18,
     name: "United States Grand Prix",
-    circuit: "Circuit of the Americas",
+    circuit_name: "Circuit of the Americas",
     date: "2026-10-25",
-    country: "USA",
-    city: "Austin, Texas",
-    days_until: 4,
-    sessions: [
-      { name: "Practice 1", date: "2026-10-23", time_local: "12:30", time_ist: "23:00" },
-      { name: "Sprint Qualifying", date: "2026-10-23", time_local: "16:30", time_ist: "03:00 (Next Day)" },
-      { name: "Sprint Race", date: "2026-10-24", time_local: "13:00", time_ist: "23:30" },
-      { name: "Qualifying", date: "2026-10-24", time_local: "17:00", time_ist: "03:30 (Next Day)" },
-      { name: "Grand Prix", date: "2026-10-25", time_local: "14:00", time_ist: "00:30 (Next Day)" }
+    time_utc: "19:00:00Z",
+    status: "Confirmed",
+    circuit_timezone: "America/Chicago (UTC-5)",
+    ist_schedule: "Monday, 26 October 00:30 IST (Race)"
+  },
+  latest_completed_event: {
+    race_id: "2026_17",
+    round: 17,
+    name: "Singapore Grand Prix",
+    date: "2026-10-11",
+    results: [
+      {
+        position: 1,
+        position_text: "1",
+        driver_name: "Lando Norris",
+        driver_code: "NOR",
+        constructor_name: "McLaren",
+        constructor_color: "#FF8000",
+        points: 25,
+        time_str: "1:44:42.568",
+        fastest_lap: "1:34.905"
+      },
+      {
+        position: 2,
+        position_text: "2",
+        driver_name: "Max Verstappen",
+        driver_code: "VER",
+        constructor_name: "Red Bull Racing",
+        constructor_color: "#3671C6",
+        points: 18,
+        time_str: "+20.945",
+        fastest_lap: "1:35.320"
+      },
+      {
+        position: 3,
+        position_text: "3",
+        driver_name: "Oscar Piastri",
+        driver_code: "PIA",
+        constructor_name: "McLaren",
+        constructor_color: "#FF8000",
+        points: 15,
+        time_str: "+41.823",
+        fastest_lap: "1:35.450"
+      },
+      {
+        position: 4,
+        position_text: "4",
+        driver_name: "George Russell",
+        driver_code: "RUS",
+        constructor_name: "Mercedes",
+        constructor_color: "#27F4D2",
+        points: 12,
+        time_str: "+1:01.040",
+        fastest_lap: "1:36.012"
+      },
+      {
+        position: 5,
+        position_text: "5",
+        driver_name: "Charles Leclerc",
+        driver_code: "LEC",
+        constructor_name: "Ferrari",
+        constructor_color: "#E80020",
+        points: 10,
+        time_str: "+1:02.430",
+        fastest_lap: "1:35.801"
+      }
     ]
   },
-  championship_snapshot: {
-    leader: "Max Verstappen",
-    leader_points: 331,
-    p2: "Lando Norris",
-    p2_points: 279,
-    gap: 52,
-    constructor_leader: "McLaren",
-    constructor_points: 516,
-    races_remaining: 7
-  },
-  providers_status: {
-    jolpica: { status: "ONLINE", ping_ms: 42 },
-    openf1: { status: "ONLINE", ping_ms: 68 },
-    fastf1: { status: "ONLINE", ping_ms: 12 },
-    wikimedia: { status: "ONLINE", ping_ms: 28 }
-  }
+  driver_standings: [
+    { position: 1, driver_id: "max_verstappen", name: "Max Verstappen", code: "VER", team_name: "Red Bull Racing", team_color: "#3671C6", points: 331, wins: 7, gap_to_leader: 0, gap_to_prev: 0 },
+    { position: 2, driver_id: "norris", name: "Lando Norris", code: "NOR", team_name: "McLaren", team_color: "#FF8000", points: 279, wins: 3, gap_to_leader: 52, gap_to_prev: 52 },
+    { position: 3, driver_id: "leclerc", name: "Charles Leclerc", code: "LEC", team_name: "Ferrari", team_color: "#E80020", points: 245, wins: 2, gap_to_leader: 86, gap_to_prev: 34 },
+    { position: 4, driver_id: "piastri", name: "Oscar Piastri", code: "PIA", team_name: "McLaren", team_color: "#FF8000", points: 237, wins: 2, gap_to_leader: 94, gap_to_prev: 8 },
+    { position: 5, driver_id: "sainz", name: "Carlos Sainz", code: "SAI", team_name: "Ferrari", team_color: "#E80020", points: 190, wins: 1, gap_to_leader: 141, gap_to_prev: 47 }
+  ],
+  constructor_standings: [
+    { position: 1, constructor_id: "mclaren", name: "McLaren", team_color: "#FF8000", points: 516, wins: 5, gap_to_leader: 0, gap_to_prev: 0 },
+    { position: 2, constructor_id: "red_bull", name: "Red Bull Racing", team_color: "#3671C6", points: 475, wins: 7, gap_to_leader: 41, gap_to_prev: 41 },
+    { position: 3, constructor_id: "ferrari", name: "Ferrari", team_color: "#E80020", points: 435, wins: 3, gap_to_leader: 81, gap_to_prev: 40 },
+    { position: 4, constructor_id: "mercedes", name: "Mercedes", team_color: "#27F4D2", points: 329, wins: 3, gap_to_leader: 187, gap_to_prev: 106 }
+  ],
+  recent_news: [
+    { id: 1, headline: "FIA confirms 2026 Technical Regulations Engine Framework", publisher: "FIA Official", url: "https://www.fia.com", published_at: "2026-10-18T10:00:00Z", category: "REGULATIONS", confirmation_status: "OFFICIAL_COMMUNIQUE", reliability_score: 99, summary: "FIA World Motor Sport Council ratifies engine convergence parameters." },
+    { id: 2, headline: "Red Bull upgrades RB22 floor package ahead of Austin COTA", publisher: "Motorsport.com", url: "https://www.motorsport.com", published_at: "2026-10-16T14:30:00Z", category: "TECHNICAL", confirmation_status: "PADDOCK_CONFIRMED", reliability_score: 92, summary: "Christian Horner confirms aero updates targeted at high-speed balance." }
+  ],
+  provider_health: [
+    { name: "Jolpica F1 API", status: "HEALTHY", last_ping_ms: 42 },
+    { name: "OpenF1 API", status: "HEALTHY", last_ping_ms: 68 },
+    { name: "FastF1 Cache", status: "HEALTHY", last_ping_ms: 12 },
+    { name: "Wikimedia Commons", status: "HEALTHY", last_ping_ms: 28 }
+  ]
 };
 
 export const FALLBACK_DRIVER_STANDINGS = [
