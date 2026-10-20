@@ -57,9 +57,10 @@ def test_driver_comparison_endpoint():
     assert data["remaining_rounds"] == 6
 
 def test_championship_history_endpoint():
-    response = client.get("/api/v1/championship/history/2025")
+    response = client.get("/api/v1/championship/history/2024")
     assert response.status_code == 200
     data = response.json()
-    assert data["season"] == 2025
+    assert data["season"] == 2024
     assert data["status"] == "COMPLETED"
     assert data["champion"]["name"] == "Max Verstappen"
+    assert len(data["standings"]) >= 10

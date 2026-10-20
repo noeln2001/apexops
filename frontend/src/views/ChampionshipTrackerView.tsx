@@ -38,6 +38,8 @@ import {
   DriverComparisonData
 } from '../types';
 
+const roundNumber = (val: number): number => Math.round(val * 10) / 10;
+
 export const ChampionshipTrackerView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'scenarios' | 'simulator' | 'probability' | 'comparison' | 'history'>('overview');
   const [selectedDriverId, setSelectedDriverId] = useState<string>('max_verstappen');
