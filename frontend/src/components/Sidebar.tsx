@@ -15,12 +15,14 @@ import {
   Sliders,
   Terminal,
   Save,
-  Info
+  Info,
+  Camera
 } from 'lucide-react';
 
 export type NavView =
   | 'overview'
   | 'championship'
+  | 'gallery'
   | 'standings'
   | 'weekend'
   | 'drivers'
@@ -49,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onSelectView }) =
       items: [
         { id: 'overview' as NavView, label: 'Overview Dashboard', icon: LayoutDashboard },
         { id: 'championship' as NavView, label: 'Championship Tracker', icon: Trophy, badge: 'VER 33' },
+        { id: 'gallery' as NavView, label: 'F1 Image Gallery', icon: Camera, badge: 'UHD 4K' },
         { id: 'standings' as NavView, label: 'Championship Standings', icon: Trophy },
         { id: 'weekend' as NavView, label: 'Race Weekend Centre', icon: Flag },
         { id: 'drivers' as NavView, label: 'Driver Explorer', icon: Users },

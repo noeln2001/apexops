@@ -12,13 +12,15 @@ from backend.app.api.v1.endpoints import (
     championship,
     news,
     operations,
-    exports
+    exports,
+    gallery
 )
 
 api_router = APIRouter()
 
 api_router.include_router(overview.router, tags=["Overview"])
 api_router.include_router(championship.router, tags=["Championship Tracker & Max Scenarios"])
+api_router.include_router(gallery.router, tags=["UHD Image Gallery"])
 api_router.include_router(standings.router, tags=["Standings"])
 api_router.include_router(drivers.router, tags=["Drivers"])
 api_router.include_router(constructors.router, tags=["Constructors"])

@@ -18,6 +18,7 @@ import { TracksideDrillsView } from './views/TracksideDrillsView';
 import { BackupsView } from './views/BackupsView';
 import { ExportsView } from './views/ExportsView';
 import { AboutView } from './views/AboutView';
+import { GalleryView } from './views/GalleryView';
 import { fetchOverview } from './services/api';
 import { OverviewData } from './types';
 
@@ -72,6 +73,7 @@ export function App() {
               />
             )}
             {currentView === 'championship' && <ChampionshipTrackerView />}
+            {currentView === 'gallery' && <GalleryView />}
             {currentView === 'standings' && <StandingsView season={season} />}
             {currentView === 'weekend' && <WeekendCentreView season={season} />}
             {currentView === 'drivers' && <DriversView />}
