@@ -1,5 +1,6 @@
 import React from 'react';
 import { Activity, ShieldCheck, Clock, Search, RefreshCw } from 'lucide-react';
+import { F1Logo } from './F1Logo';
 
 interface NavbarProps {
   season: number;
@@ -18,14 +19,15 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="h-14 bg-[#0e1117] border-b border-[#1f2530] px-4 flex items-center justify-between sticky top-0 z-50">
       {/* Brand & Platform */}
       <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
-          <div className="w-2.5 h-6 bg-[#e10600] rounded-sm shadow-[0_0_8px_rgba(225,6,0,0.6)]"></div>
+        <div className="flex items-center space-x-2.5">
+          <F1Logo className="h-6 w-auto drop-shadow-[0_0_8px_rgba(225,6,0,0.6)]" />
+          <div className="h-4 w-px bg-[#2d3748]"></div>
           <span className="font-black text-lg tracking-wider text-white">
             APEX<span className="text-[#e10600]">OPS</span>
           </span>
         </div>
         <span className="hidden md:inline-block px-2 py-0.5 text-[10px] font-semibold bg-[#1a202c] text-[#94a3b8] rounded border border-[#2d3748] uppercase tracking-wider">
-          Trackside Intelligence & Ops
+          Trackside Intelligence &amp; Ops
         </span>
       </div>
 
