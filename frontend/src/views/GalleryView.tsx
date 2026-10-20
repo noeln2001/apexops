@@ -22,6 +22,7 @@ import {
   Eye,
   X
 } from 'lucide-react';
+import { FALLBACK_VERIFIED_GALLERY } from '../services/fallbackData';
 
 interface VerifiedImage {
   id: string;
@@ -111,19 +112,58 @@ export const GalleryView: React.FC = () => {
     loadSourceCompliance();
   }, []);
 
+  const DEFAULT_SOURCES: SourceCompliance[] = [
+    {
+      name: "Wikimedia Commons",
+      homepage: "https://commons.wikimedia.org/",
+      access_type: "PUBLIC_API_AND_ORIGINALS",
+      license_compliance: "Creative Commons / Public Domain with full attribution",
+      status: "AVAILABLE",
+      details: "Full original UHD/5K photographic master files accessible with documented reuse permissions."
+    },
+    {
+      name: "Red Bull Content Pool",
+      homepage: "https://www.redbullcontentpool.com/",
+      access_type: "AUTHENTICATED_EDITORIAL",
+      license_compliance: "Editorial use only with accredited account",
+      status: "LOGIN_RESTRICTED",
+      details: "Public access restricted to web previews; original UHD master files require authenticated press credentials."
+    },
+    {
+      name: "Formula 1 Official (formula1.com)",
+      homepage: "https://www.formula1.com/",
+      access_type: "WEB_EDITORIAL",
+      license_compliance: "All rights reserved (FOM)",
+      status: "RESTRICTED_WEB_PREVIEW_ONLY",
+      details: "Public site serves web-optimized editorial banners and thumbnails; UHD raw photography is not offered as unrestricted public downloads."
+    },
+    {
+      name: "McLaren Racing Downloads",
+      homepage: "https://www.mclaren.com/racing/downloads/",
+      access_type: "PUBLIC_DESKTOP_WALLPAPERS",
+      license_compliance: "Personal non-commercial desktop wallpaper license",
+      status: "AVAILABLE_SELECTIVE",
+      details: "Offers official seasonal desktop wallpapers in HD/UHD formats for personal fan use."
+    }
+  ];
+
   const loadGalleryImages = async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/v1/gallery/images');
       if (res.ok) {
         const data = await res.json();
-        setImages(data.images || []);
+        if (data.images && data.images.length > 0) {
+          setImages(data.images);
+          setLoading(false);
+          return;
+        }
       }
     } catch (err) {
-      console.error('Failed to load gallery images:', err);
-    } finally {
-      setLoading(false);
+      // Expected on static GitHub Pages
     }
+    setImages(FALLBACK_VERIFIED_GALLERY as any);
+    setLoading(false);
   };
 
   const loadSourceCompliance = async () => {
@@ -131,11 +171,13 @@ export const GalleryView: React.FC = () => {
       const res = await fetch('/api/v1/gallery/sources');
       if (res.ok) {
         const data = await res.json();
-        setSources(data.sources || []);
+        if (data.sources && data.sources.length > 0) {
+          setSources(data.sources);
+          return;
+        }
       }
-    } catch (err) {
-      console.error('Failed to load sources:', err);
-    }
+    } catch (err) {}
+    setSources(DEFAULT_SOURCES);
   };
 
   const handleDiscover = async () => {
