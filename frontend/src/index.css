@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #0b0d10;
+    --bg-card: #12151b;
+    --bg-card-hover: #171b23;
+    --border-subtle: #1f2530;
+    --border-accent: #2d3545;
+    --text-primary: #f0f3f8;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --f1-red: #e10600;
+    --f1-red-glow: rgba(225, 6, 0, 0.2);
+    --telemetry-green: #10b981;
+    --telemetry-blue: #38bdf8;
+    --telemetry-amber: #f59e0b;
+    --telemetry-purple: #a855f7;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0d10;
+}
+::-webkit-scrollbar-thumb {
+  background: #242b38;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #394254;
+}
+
+/* Data Table Styling */
+.table-f1 th {
+  background-color: #0f1217;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid #1f2530;
+}
+.table-f1 td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid #161a22;
+  font-size: 0.875rem;
+}
+.table-f1 tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Telemetry Canvas/Glows */
+.f1-card {
+  background-color: #12151b;
+  border: 1px solid #1f2530;
+  border-radius: 0.5rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.f1-card:hover {
+  border-color: #2e3748;
+}
+
+.f1-card-accent {
+  border-left: 3px solid #e10600;
+}
+
+.f1-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}

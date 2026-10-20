@@ -1,0 +1,104 @@
+from fastapi import APIRouter, Depends, Body, Query
+from sqlalchemy.orm import Session
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel
+from backend.app.db.session import get_db
+from backend.app.models.f1_core import Driver, Constructor
+from backend.app.models.f1_events import DriverStanding, Race
+from analytics.simulation.championship_simulator import ChampionshipSimulator
+
+router = APIRouter()
+
+class ScenarioRound(BaseModel):
+    round: int
+    finishing_order: List[str] # driver IDs
+
+class SimulationRequest(BaseModel):
+    season: int = 2026
+    mode: str = "monte_carlo" # "monte_carlo" or "deterministic"
+    iterations: int = 1000
+    scenarios: Optional[List[ScenarioRound]] = None
+
+@router.get("/simulations/championship")
+def get_default_championship_simulation(
+    season: int = Query(2026),
+    db: Session = Depends(get_db)
+):
+    """Returns baseline Monte Carlo championship probabilities using current championship points."""
+    standings = db.query(DriverStanding).filter(
+        DriverStanding.season_year == season
+    ).order_by(DriverStanding.position).all()
+
+    # Calculate actual remaining races
+    completed_count = db.query(Race).filter(Race.season_year == season, Race.status == "Completed").count()
+    total_count = db.query(Race).filter(Race.season_year == season).count()
+    remaining_races = max(1, total_count - completed_count)
+
+    standings_payload = []
+    for s in standings:
+        d = db.query(Driver).filter(Driver.driver_id == s.driver_id).first()
+        c = db.query(Constructor).filter(Constructor.constructor_id == s.constructor_id).first() if s.constructor_id else None
+        standings_payload.append({
+            "driver_id": s.driver_id,
+            "name": f"{d.first_name} {d.last_name}" if d else s.driver_id,
+            "team": c.name if c else "Unknown",
+            "points": s.points,
+            "wins": s.wins
+        })
+
+    simulation = ChampionshipSimulator.run_monte_carlo(
+        current_standings=standings_payload,
+        remaining_races=remaining_races,
+        remaining_sprints=2,
+        iterations=1000
+    )
+
+    return {
+        "season": season,
+        "mode": "monte_carlo",
+        "completed_races": completed_count,
+        "remaining_races": remaining_races,
+        "results": simulation
+    }
+
+@router.post("/simulations/championship")
+def post_custom_championship_simulation(
+    req: SimulationRequest,
+    db: Session = Depends(get_db)
+):
+    """Executes either a user-defined scenario simulation or custom Monte Carlo."""
+    standings = db.query(DriverStanding).filter(
+        DriverStanding.season_year == req.season
+    ).order_by(DriverStanding.position).all()
+
+    standings_payload = []
+    for s in standings:
+        d = db.query(Driver).filter(Driver.driver_id == s.driver_id).first()
+        c = db.query(Constructor).filter(Constructor.constructor_id == s.constructor_id).first() if s.constructor_id else None
+        standings_payload.append({
+            "driver_id": s.driver_id,
+            "name": f"{d.first_name} {d.last_name}" if d else s.driver_id,
+            "team": c.name if c else "Unknown",
+            "points": s.points,
+            "wins": s.wins
+        })
+
+    if req.mode == "deterministic" and req.scenarios:
+        scenarios_dicts = [{"round": sc.round, "finishing_order": sc.finishing_order} for sc in req.scenarios]
+        results = ChampionshipSimulator.run_deterministic_scenario(standings_payload, scenarios_dicts)
+        return {
+            "season": req.season,
+            "mode": "deterministic",
+            "scenario_results": results
+        }
+    else:
+        results = ChampionshipSimulator.run_monte_carlo(
+            current_standings=standings_payload,
+            remaining_races=6,
+            iterations=req.iterations
+        )
+        return {
+            "season": req.season,
+            "mode": "monte_carlo",
+            "results": results
+        }
