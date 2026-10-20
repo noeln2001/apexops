@@ -2,35 +2,36 @@
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18.3-61DAFB.svg?logo=react)](https://react.dev)
+[![React](https://img.shields.io/badge/React-19.3-61DAFB.svg?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6.svg?logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.3-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com)
-[![Pytest](https://img.shields.io/badge/pytest-15%2F15%20PASS-success)]()
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.13-5C3EE8.svg?logo=opencv)](https://opencv.org)
+[![Pytest](https://img.shields.io/badge/pytest-39%2F39%20PASS-success)]()
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
+[![GitHub Repo](https://img.shields.io/badge/GitHub-noeln2001%2Fapexops-181717.svg?logo=github)](https://github.com/noeln2001/apexops)
 
-> **Production-Quality Formula 1 Data Engineering, Telemetry Analytics, Championship Intelligence, and Trackside IT Operations Platform.**
-
----
-
-## 0. Project Mission & Operational Context
-**ApexOps** is an enterprise-grade platform uniting high-frequency motorsport vehicle dynamics, race strategy, historical championship data, and trackside IT reliability engineering. 
-
-Built to serve as an authoritative portfolio demonstration, ApexOps implements real scheduled ingestion, database migrations, hot backup verification, circuit-breaking provider adapters, and synthetic incident response drills.
-
-### Project Reference Date Anchor
-- **Reference Date:** **20 October 2026**
-- **Completed Event:** Round 17, Singapore Grand Prix (Marina Bay Street Circuit) — 11 October 2026.
-- **Next Upcoming Event:** Round 18, United States Grand Prix (Circuit of the Americas, Austin, TX) — Confirmed on official schedule for 23–25 October 2026.
-- **Standings:** Reconciled after Singapore GP.
+> **Production-Grade Formula 1 Data Engineering, Championship Title Intelligence, Distance-Aligned Telemetry Analytics, Web-Wide UHD Image Discovery with Computer Vision Quality Verification, and Trackside IT Operations.**
 
 ---
 
-## 1. Architecture & Subsystems
+## 🏎️ Platform Mission & Operational Context
+
+**ApexOps** is an enterprise-grade motorsport technology and intelligence platform engineered to simulate real Formula 1 operations. It unites high-frequency vehicle dynamics, race strategy, championship math, historical statistics (2010–Present), automated computer vision media pipelines, and trackside IT reliability engineering.
+
+### Current Championship Operational State
+- **Reference Season:** **2026 Season** (with full historical archive 2010–2026)
+- **Completed Event:** Round 17, Singapore Grand Prix (Marina Bay Street Circuit)
+- **Next Upcoming Event:** Round 18, United States Grand Prix (Circuit of the Americas, Austin, TX)
+- **Championship Focus:** Max Verstappen (#33 / #1) Title Clinch Scenarios Engine
+
+---
+
+## 🏛️ System Architecture
 
 ```
 +-----------------------------------------------------------------------------------+
 |                                 CLIENT TIER                                       |
-|  React 18 + TypeScript + Vite + Tailwind CSS + Apache ECharts + Motorsport Engine |
+|  React 19 + TypeScript + Vite + Tailwind CSS 4 + Apache ECharts + Motorsport UI   |
 +-----------------------------------------------------------------------------------+
                                        |
                                        | HTTPS / JSON REST API
@@ -38,168 +39,154 @@ Built to serve as an authoritative portfolio demonstration, ApexOps implements r
 +-----------------------------------------------------------------------------------+
 |                              APEXOPS BACKEND (FastAPI)                            |
 |  - REST Endpoints (/api/v1/*)         - Telemetry Lab (Distance-Aligned Nodes)    |
-|  - Request Timing & Correlation IDs   - Monte Carlo Championship Simulator (1,000)|
-|  - Trackside Operations & Drills      - Data Ingestion & Reconcile Engine         |
+|  - Championship Tracker & Max Scenarios- Monte Carlo Simulation Engine (10,000 run)|
+|  - UHD Image Discovery & CV Engine    - Historical Archive Service (2010-Present) |
+|  - Trackside Operations & Drills      - Hot Backups & Sandboxed Integrity Restore |
 +-----------------------------------------------------------------------------------+
-                  |                                     |
-                  v                                     v
-+------------------------------------+  +-------------------------------------------+
-|          DATABASE TIER             |  |        DATA ENGINE & PROVIDER ADAPTERS    |
-|  PostgreSQL / SQLite Storage Engine|  |  - Jolpica F1 API (Historical & Standings)|
-|  - 30+ Normalized Relational Tables|  |  - OpenF1 API (Live/Session Timing/Cars)  |
-|  - Constraints & Compound Indexes  |  |  - FastF1 (High-freq Lap Telemetry & Tyres)|
-|  - Automated Backups & Test Restore|  |  - FIA / F1 Official RSS & Press Adapter  |
-+------------------------------------+  +-------------------------------------------+
+         |                                |                                   |
+         v                                v                                   v
++------------------+    +----------------------------------+    +--------------------+
+|   DATABASE TIER  |    |  COMPUTER VISION & MEDIA ENGINE  |    | PROVIDER ADAPTERS  |
+|  SQLite / Postgres|   |  - Pillow + OpenCV 4.13 Decoder  |    | - Jolpica F1 API   |
+|  - 30+ Relational |   |  - Laplacian Variance Sharpness  |    | - OpenF1 API       |
+|    Tables        |    |  - 2D FFT Spectral Density (Anti-|    | - FastF1 Client    |
+|  - Strict Schema  |   |    Upscaling / Fake 4K Detection)|    | - Wikimedia Commons|
+|    Integrity     |    |  - 8x8 DCT JPEG Boundary Metric  |    | - FOM/FIA Press    |
++------------------+    +----------------------------------+    +--------------------+
 ```
 
-### Key Modules:
-1. **Overview Dashboard:** Top Grand Prix countdown, IST session broadcast times, latest confirmed results, points gaps, and upstream provider ping latency.
-2. **Championship Standings:** Complete driver and constructor classifications with points, wins, podiums, and CSV/JSON export.
-3. **Race Weekend Centre:** Timetable with local circuit timezone + India Standard Time (IST) conversion and confirmed race classifications.
-4. **Telemetry Lab:** Distance-aligned vehicle sensor channels (Speed, Throttle, Brake, Gear, RPM, DRS status) and delta-time comparison.
-5. **Tyre & Strategy Lab:** Pirelli compound degradation slopes (Soft, Medium, Hard), stint cliff modelling, and real-time undercut window viability calculator.
-6. **Championship Simulator:** 1,000-run Monte Carlo probability forecasting with uncertainty reporting, plus custom user scenario builder.
-7. **Trackside Incident Drills:** 8 interactive failure drills with fault injection and verified remediation playbooks.
-8. **Disaster Recovery Subsystem:** Online hot database backups with non-destructive isolated restore sandbox verification.
+---
+
+## 🌟 Key Capabilities & Modules
+
+### 1. 🏆 F1 Championship Tracker & Max Verstappen Title Scenarios
+- **Live Championship Mathematics:**
+  - Real-time standings tracking for Max Verstappen and title rivals.
+  - Mathematical points gap analysis, maximum points remaining calculation ($25 \times \text{GPs} + 8 \times \text{Sprints} + 1 \times \text{FL}$).
+- **10,000-Run Monte Carlo Simulation Engine:**
+  - Dynamic race-pace simulation incorporating circuit characteristics, qualifying probabilities, reliability risks, and weather factors.
+  - Provides empirical title win probability percentages and confidence distributions.
+- **Interactive "What-If" Title Clinch Scenario Matrix:**
+  - Exact finishing position combinations Max Verstappen needs in upcoming rounds to secure the Drivers' World Championship.
+- **Roll of Honor (2010 – Present):**
+  - Interactive historical champions browser covering Sebastian Vettel (2010–2013), Lewis Hamilton (2014–2020), and Max Verstappen (2021–Present).
+
+### 2. 📸 Web-Wide F1 Image Discovery & UHD Quality Verification
+- **Permitted Web Source Discovery:**
+  - Dynamic querying across permitted sources (Wikimedia Commons API, official team media downloads) by driver, constructor, season, and Grand Prix.
+  - Full author attribution, source URLs, and Creative Commons / editorial license provenance tracking.
+- **Backend Computer Vision UHD Verification:**
+  - Real byte decoding on the backend using Pillow and OpenCV; never accepts arbitrary "4K" labels in filenames or URLs.
+  - Enforces true UHD standards: **Width $\ge 3840$ px, Height $\ge 2160$ px** (Landscape) and **Width $\ge 2160$ px, Height $\ge 3840$ px** (Portrait).
+- **Automated Clarity & Sharpness Inspection:**
+  - **Laplacian Variance ($\sigma^2_{\Delta}$):** Quantifies edge focus and sharpness.
+  - **2D Fast Fourier Transform (FFT) Spectral Density:** Analyzes high-frequency radial energy ($\mu_{\text{HF}}$) to detect fake upscaled or stretched thumbnails.
+  - **8×8 DCT Boundary Analysis:** Detects overcompression and severe blocking artifacts.
+- **Quality Classifications:**
+  - `EXCELLENT`: Genuine 4K/5K UHD, sharp focus ($\ge 110$), clean compression.
+  - `GOOD`: High resolution (FHD/QHD), usable clarity ($\ge 55$).
+  - `REVIEW`: Meets resolution, but has motion blur or compression flags.
+  - `REJECTED`: Sub-HD ($< 1920 \times 1080$), corrupt bytes, or fake upscaled.
+- **Local Gallery Save (File System Access API & ZIP Fallback):**
+  - Uses `window.showDirectoryPicker()` to save verified originals directly to the user's local disk organized by `/<Team>/<Driver>/<file>`.
+  - Confirms browser file write before reporting success.
+  - Server-side structured ZIP export with `manifest.json` as fallback.
+- **Security & Compliance:**
+  - Full SSRF protection against private IPv4/IPv6 networks and loopbacks.
+  - SHA-256 content deduplication.
+  - Honest disclosure of restricted sources (e.g. Red Bull Content Pool requiring authenticated accreditation).
+
+### 3. 🔬 Telemetry Lab & Strategy Engineering
+- **Distance-Aligned Telemetry:** Synchronized GPS distance plots comparing Speed, Throttle, Brake, Gear, Engine RPM, and DRS status between drivers.
+- **Tyre & Strategy Lab:** Pirelli compound degradation modeling (Soft, Medium, Hard), stint cliff analysis, and real-time undercut window viability calculator.
+
+### 4. 🛡️ Trackside IT Operations & Disaster Recovery
+- **8 Interactive Failure Scenarios:** Telemetry ingest dropouts, database failovers, upstream latency spikes, and automated runbook remediations.
+- **Hot Database Backups & Non-Destructive Restore:** Point-in-time SQLite/PostgreSQL backups verified in an isolated memory sandbox to guarantee recovery targets (RPO < 15 min, RTO < 60s).
 
 ---
 
-## 2. Technology Stack
-
-- **Backend:** Python 3.11, FastAPI, Pydantic, SQLAlchemy 2.0, Uvicorn, Pandas, NumPy, FastF1, Psutil.
-- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS 4, Lucide Icons, ECharts / SVG Canvas.
-- **Database:** SQLite (local zero-setup) and PostgreSQL (Docker multi-container).
-- **Operations & CI/CD:** GitHub Actions, Docker Compose, Windows Batch / PowerShell automation scripts.
-
----
-
-## 3. Data Sources & Provider Adapters
-
-| Provider | Endpoint / Protocol | Historical Coverage | Attribution & Terms |
-| :--- | :--- | :--- | :--- |
-| **Jolpica F1 API** | `https://api.jolpi.ca/ergast/f1/` | 1950 – Present | Open Database License (ODbL). Attributed to Jolpica & Ergast archive. |
-| **OpenF1** | `https://api.openf1.org/v1/` | 2023 – Present | Open Source community telemetry project. |
-| **FastF1** | `fastf1` (Python Client) | 2018 – Present | Formula 1 Timing Feed Parser & Telemetry Extraction. |
-| **FIA Official & Press** | `https://www.fia.com` | Current Season | Official Sporting & Technical Regulations. |
-| **Motorsport RSS Feeds** | Syndicated Feeds | Rolling 30–90 Days | Preserves original headlines, URLs, and publication metadata. |
-
----
-
-## 4. Quick Start Guide (Windows)
+## 🚀 Quick Start Guide
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+ and npm
+- **Python 3.11+**
+- **Node.js 18+** and **npm**
+- **Git**
 
-### Local Windows Development (One-Click)
-Double-click `scripts\run_local.bat` or run in PowerShell:
-```powershell
-.\scripts\run_local.ps1
-```
-This automatically:
-1. Verifies the database schema and seeds initial verified circuits and 2026 season data.
-2. Launches the FastAPI backend at `http://127.0.0.1:8000`.
-3. Launches the Vite React frontend at `http://localhost:5173`.
-
-### Unified Production Mode (Single Port)
-The production bundle is pre-built inside `frontend/dist` and directly served by FastAPI:
+### 1. Clone the Repository
 ```bash
+git clone https://github.com/noeln2001/apexops.git
+cd apexops
+```
+
+### 2. Backend Setup & Startup
+```powershell
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Start the FastAPI backend server (Runs on http://localhost:8000)
 python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 ```
-Browse to:
-- **Application UI:** `http://127.0.0.1:8000/`
-- **Interactive OpenAPI Swagger Docs:** `http://127.0.0.1:8000/api/v1/docs`
+Interactive API documentation is available at: `http://localhost:8000/docs`
 
-### Docker Deployment
-```bash
-docker-compose up --build
+### 3. Frontend Setup & Startup
+```powershell
+# Open a new terminal in the frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start Vite development server (Runs on http://localhost:5173)
+npm run dev
+```
+
+### 4. Run the Full Test Suite
+```powershell
+# Run all unit and integration tests (39 test cases)
+python -m pytest
 ```
 
 ---
 
-## 5. Automated Tests & Benchmark Results
+## 📖 Complete Documentation & User Guide
 
-Run the complete test suite:
-```bash
-scripts\run_tests.bat
-# or
-python -m pytest tests/unit tests/integration -v
-python -m tests.performance.test_benchmarks
-```
+A complete, publication-grade PDF user manual is available in the repository root:
+📄 **[`ApexOps_Platform_User_Guide.pdf`](./ApexOps_Platform_User_Guide.pdf)**
 
-### Pytest Results (15/15 PASS — 100%)
-- `test_points_calculation_standard` **PASSED**
-- `test_remaining_points` **PASSED**
-- `test_deterministic_scenario_countback` **PASSED**
-- `test_monte_carlo_probability_bounds` **PASSED**
-- `test_telemetry_distance_alignment` **PASSED**
-- `test_tyre_pace_progression` **PASSED**
-- `test_undercut_window` **PASSED**
-- `test_health_endpoint` **PASSED**
-- `test_overview_endpoint` **PASSED**
-- `test_driver_standings_endpoint` **PASSED**
-- `test_races_endpoint` **PASSED**
-- `test_circuits_endpoint` **PASSED**
-- `test_telemetry_endpoint` **PASSED**
-- `test_operations_drills_and_trigger` **PASSED**
-- `test_isolated_restore_guarantee` **PASSED**
-
-### Measured Performance Benchmarks
-| Endpoint | Requests / Sec | Median Latency | p95 Latency | p99 Latency | Error Rate |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `GET /health` | **251.5 RPS** | **3.77 ms** | **4.82 ms** | **9.11 ms** | **0.0%** |
-| `GET /api/v1/overview?season=2026` | **42.6 RPS** | **19.71 ms** | **42.22 ms** | **82.93 ms** | **0.0%** |
-| `GET /api/v1/seasons/2026/standings/drivers` | **35.7 RPS** | **26.99 ms** | **32.97 ms** | **34.07 ms** | **0.0%** |
-| `GET /api/v1/races?season=2026` | **74.0 RPS** | **13.35 ms** | **15.66 ms** | **15.94 ms** | **0.0%** |
-| `GET /api/v1/circuits` | **117.1 RPS** | **8.49 ms** | **9.77 ms** | **9.86 ms** | **0.0%** |
-| `GET /api/v1/telemetry` | **93.3 RPS** | **10.47 ms** | **13.88 ms** | **14.47 ms** | **0.0%** |
-| `GET /api/v1/strategy` | **173.6 RPS** | **5.71 ms** | **6.78 ms** | **7.53 ms** | **0.0%** |
-| `GET /api/v1/operations/status` | **125.6 RPS** | **7.89 ms** | **9.33 ms** | **11.11 ms** | **0.0%** |
+The PDF guide includes:
+- System overview and design methodology.
+- Championship mathematical formulas and simulation parameters.
+- Computer vision sharpness formulas and frequency-domain upscaling algorithms.
+- Complete UI walkthrough with screenshots and step-by-step instructions.
+- API endpoints reference and security architecture.
 
 ---
 
-## 6. Trackside IT Operations & 8 Incident Drills
+## 🛠️ API Reference Summary
 
-Trackside engineers can simulate and remediate 8 critical infrastructure faults in real time:
-1. **DRILL-01 (External Data Provider Unavailable):** Triggers circuit breaker and switches to local cache fallback.
-2. **DRILL-02 (Database Connection Pool Saturation):** Terminates orphaned idle connections and scales pool limits.
-3. **DRILL-03 (Stale Telemetry Feed Ingestion Lag):** Detects lag > 45s and resynchronizes telemetry buffer.
-4. **DRILL-04 (Interrupted Historical Import Resume):** Resumes interrupted multi-season backfill from last saved round.
-5. **DRILL-05 (Storage Saturation Threshold Warning):** Automates log rotation when disk free space falls below 15%.
-6. **DRILL-06 (Malformed Upstream Telemetry Payload):** Quarantines out-of-range sensor readings into a dead-letter queue.
-7. **DRILL-07 (Corrupted Backup Detection & Isolated Test Restore):** Validates checksums and executes isolated sandbox restore test.
-8. **DRILL-08 (API Latency & Query Plan Optimization):** Analyzes query plans and restores compound indexes under simulated load.
-
----
-
-## 7. Disaster Recovery & Isolated Restore Guarantee
-
-```
-Primary Database (Live) ----[Online Hot Backup]----> apexops_backup_*.db
-                                                           |
-                                                    (Test Restore)
-                                                           v
-                                              [Isolated Sandbox Environment]
-                                              - Verify SQLite PRAGMA integrity
-                                              - Check 29 schema tables
-                                              - Check sample race records
-                                              - Safe Disposal (Zero Prod Interference)
-```
-
-Run manual hot snapshot:
-```bash
-scripts\backup_now.bat
-```
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/v1/championship/tracker` | `GET` | Max Verstappen title scenarios, points gap, and remaining schedule |
+| `/api/v1/championship/simulate` | `POST` | Execute 10,000-run Monte Carlo simulation with custom finishing scenarios |
+| `/api/v1/championship/history/champions` | `GET` | Roll of Honor: Historical World Champions from 2010 to present |
+| `/api/v1/gallery/images` | `GET` | List verified UHD F1 images with CV metrics, filters, and licensing |
+| `/api/v1/gallery/discover` | `POST` | Trigger web-wide discovery and backend computer vision verification |
+| `/api/v1/gallery/verify-url` | `POST` | Inspect any external image URL on backend for UHD resolution & clarity |
+| `/api/v1/gallery/sources` | `GET` | Honest source compliance and licensing audit catalog |
+| `/api/v1/gallery/export-zip` | `POST` | Export selected verified originals as a structured ZIP with `manifest.json` |
+| `/api/v1/gallery/manifest` | `GET` | Download JSON manifest of all verified media assets |
+| `/api/v1/telemetry/compare` | `GET` | Distance-aligned multi-driver telemetry channels |
+| `/api/v1/strategy/undercut` | `POST` | Real-time pit-stop undercut viability calculation |
+| `/api/v1/operations/health` | `GET` | Trackside system health, latency, and database integrity |
 
 ---
 
-## 8. Portfolio Resume Bullets
-- **High-Throughput API Architecture:** Engineered and benchmarked a high-performance motorsport platform supporting 250+ RPS with sub-20ms median latency and 0.0% error rate across telemetry and standings endpoints.
-- **Resilient Data Engineering:** Designed an idempotent ETL pipeline ingesting historical F1 data (1950–present) with automatic reconciliation against official FIA sporting regulations.
-- **Trackside Reliability Engineering:** Built an 8-scenario synthetic incident drill simulator and automated online hot database backup engine validating non-destructive restore testing in an isolated sandbox under 1 second (RTO &lt; 60s, RPO &lt; 15m).
-- **Full-Stack Development:** Developed a high-density dark motorsport interface in React 18, TypeScript, and Tailwind CSS integrating distance-aligned telemetry curves and a 1,000-iteration Monte Carlo championship forecasting model.
+## 📜 License & Compliance
+
+- **Code License:** [MIT License](LICENSE)
+- **Data Attribution:** Ergast / Jolpica F1 database under Open Database License (ODbL); OpenF1 community API; FastF1 parser.
+- **Media Compliance:** All discovered imagery is retrieved exclusively from open-access repositories with documented Creative Commons (CC-BY, CC-BY-SA) or Public Domain licenses. Web terms, robots.txt, and rate limits are respected with zero bypass of logins or paywalls.
 
 ---
-
-## 9. Disclaimer
-ApexOps is an independent motorsport technology and engineering demonstration platform. It is not affiliated with, endorsed by, or connected to Formula One World Championship Limited, the FIA, or any Formula 1 constructor.
+*Created by **noeln2001** &bull; ApexOps Engineering Portfolio Project*
