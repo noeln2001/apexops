@@ -125,7 +125,12 @@ def test_isolated_restore(filename: str):
     """
     res = BackupManager.test_isolated_restore(filename)
     if res.get("status") == "FAILED":
-        raise HTTPException(status_code=500, detail=res.get("error"))
+        err = res.get("error", "Unknown error")
+        if "Invalid" in err or "pattern" in err or "traversal" in err:
+            raise HTTPException(status_code=400, detail=err)
+        if "not found" in err.lower():
+            raise HTTPException(status_code=404, detail=err)
+        raise HTTPException(status_code=500, detail=err)
     return res
 
 @router.post("/admin/import")

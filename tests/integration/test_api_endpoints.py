@@ -132,4 +132,32 @@ def test_real_traffic_recorded_in_telemetry_and_logs():
     # Confirm log entries contain structured info
     assert any("GET /api/v1/drivers" in entry["message"] for entry in logs)
 
+def test_backup_path_traversal_protection():
+    from operations.backups.backup_manager import BackupManager
+
+    # Direct unit test on BackupManager
+    res = BackupManager.test_isolated_restore("../data/apexops.db")
+    assert res["status"] == "FAILED"
+    assert "Invalid" in res["error"] or "pattern" in res["error"] or "traversal" in res["error"]
+
+    # Also test other traversal and malicious payloads
+    for bad_name in [
+        "../../etc/passwd",
+        "apexops_backup_20261020_141916.db/../malicious.db",
+        "random_file.db",
+        "apexops_backup_123.db",
+        "apexops_backup_20261020_141916.db.sh"
+    ]:
+        res_bad = BackupManager.test_isolated_restore(bad_name)
+        assert res_bad["status"] == "FAILED"
+
+    # API endpoint test rejects path traversal attempt
+    api_res = client.post("/api/v1/operations/backups/..%2Fdata%2Fapexops.db/test-restore")
+    assert api_res.status_code in [400, 404, 405]
+
+    bad_api_res = client.post("/api/v1/operations/backups/apexops_backup_invalid.db/test-restore")
+    assert bad_api_res.status_code == 400
+
+
+
 

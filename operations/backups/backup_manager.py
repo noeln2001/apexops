@@ -1,9 +1,11 @@
 import os
+import re
 import json
 import shutil
 import sqlite3
 import time
 import logging
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from backend.app.core.config import settings
@@ -14,11 +16,32 @@ class BackupManager:
     """Manages hot database backups, retention policies, and isolated non-destructive restore testing."""
 
     RESTORE_LOG_FILE = os.path.join(settings.BACKUP_DIR, "last_verified_restore.json")
+    BACKUP_FILENAME_PATTERN = re.compile(r"^apexops_backup_\d{8}_\d{6}\.db$")
 
     @classmethod
     def get_backup_dir(cls) -> str:
         os.makedirs(settings.BACKUP_DIR, exist_ok=True)
         return settings.BACKUP_DIR
+
+    @classmethod
+    def validate_backup_filename(cls, name: str) -> Path:
+        """
+        Validates that filename is a simple basename, matches naming convention,
+        and resolved path is strictly relative to BACKUP_DIR.
+        """
+        if not name or os.path.basename(name) != name:
+            raise ValueError(f"Invalid backup filename: {name}")
+
+        if not cls.BACKUP_FILENAME_PATTERN.match(name):
+            raise ValueError(f"Filename does not match expected pattern: {name}")
+
+        backup_dir = Path(cls.get_backup_dir()).resolve()
+        resolved_path = (backup_dir / name).resolve()
+
+        if not resolved_path.is_relative_to(backup_dir):
+            raise ValueError(f"Path traversal detected: {name}")
+
+        return resolved_path
 
     @classmethod
     def create_backup(cls, note: str = "Manual snapshot") -> Dict[str, Any]:
@@ -79,9 +102,13 @@ class BackupManager:
         Executes a restore test in an isolated temporary sandbox.
         GUARANTEE: Never overwrites or touches the live production database.
         """
-        backup_path = os.path.join(cls.get_backup_dir(), backup_filename)
-        if not os.path.exists(backup_path):
-            return {"error": f"Backup file {backup_filename} not found"}
+        try:
+            backup_path = cls.validate_backup_filename(backup_filename)
+        except ValueError as ve:
+            return {"status": "FAILED", "error": str(ve)}
+
+        if not backup_path.exists():
+            return {"status": "FAILED", "error": f"Backup file {backup_filename} not found"}
 
         sandbox_dir = os.path.join(cls.get_backup_dir(), "sandbox_test")
         os.makedirs(sandbox_dir, exist_ok=True)
@@ -89,7 +116,7 @@ class BackupManager:
 
         try:
             start_time = time.time()
-            shutil.copy2(backup_path, sandbox_db)
+            shutil.copy2(str(backup_path), sandbox_db)
             
             # Mount isolated database and verify table counts & integrity
             conn = sqlite3.connect(sandbox_db)
