@@ -25,7 +25,7 @@ export const TitleScenariosCard: React.FC<TitleScenariosCardProps> = ({ scenario
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {scenariosData.scenarios.map((scen) => (
+        {(scenariosData?.scenarios || []).map((scen) => (
           <div
             key={scen.id}
             className="bg-[#12151b] border border-[#1f2530] hover:border-[#2d3748] rounded-lg p-5 transition flex flex-col justify-between space-y-4"

@@ -56,15 +56,22 @@ export const ConstructorsView: React.FC = () => {
                       <span>Driver Lineup:</span>
                     </div>
                     <div className="space-y-1">
-                      {c.current_drivers && c.current_drivers.length > 0 ? (
-                        c.current_drivers.map((name: string, idx: number) => (
-                          <div key={idx} className="p-1.5 bg-[#0d1017] border border-[#1a202c] rounded text-white font-semibold">
-                            {name}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-[#64748b] italic">Active driver roster</div>
-                      )}
+                      {(() => {
+                        const driversList = Array.isArray(c.current_drivers)
+                          ? c.current_drivers
+                          : typeof c.drivers === "string"
+                          ? c.drivers.split(",").map((s: string) => s.trim())
+                          : [];
+                        return driversList.length > 0 ? (
+                          driversList.map((name: string, idx: number) => (
+                            <div key={idx} className="p-1.5 bg-[#0d1017] border border-[#1a202c] rounded text-white font-semibold">
+                              {name}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-[#64748b] italic">Active driver roster</div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

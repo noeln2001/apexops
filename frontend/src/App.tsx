@@ -27,12 +27,48 @@ const ExportsView = lazy(() => import('./views/ExportsView').then(m => ({ defaul
 const AboutView = lazy(() => import('./views/AboutView').then(m => ({ default: m.AboutView })));
 const GalleryView = lazy(() => import('./views/GalleryView').then(m => ({ default: m.GalleryView })));
 
+const VALID_VIEWS: readonly NavView[] = [
+  'overview', 'championship', 'gallery', 'standings', 'weekend', 'drivers',
+  'constructors', 'circuits', 'calendar', 'telemetry', 'strategy', 'simulator',
+  'news', 'observability', 'drills', 'backups', 'explorer', 'about'
+] as const;
+
+function getViewFromLocation(): NavView {
+  if (typeof window === 'undefined') return 'overview';
+  const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase() as NavView;
+  if (VALID_VIEWS.includes(hash)) {
+    return hash;
+  }
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const lastPart = (pathParts[pathParts.length - 1] || '').toLowerCase() as NavView;
+  if (VALID_VIEWS.includes(lastPart)) {
+    return lastPart;
+  }
+  return 'overview';
+}
+
 export function App() {
-  const [currentView, setCurrentView] = useState<NavView>('overview');
+  const [currentView, setCurrentViewState] = useState<NavView>(getViewFromLocation);
   const [season, setSeason] = useState<number>(2026);
   const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+
+  const setCurrentView = (v: NavView) => {
+    setCurrentViewState(v);
+    if (window.location.hash !== `#${v}`) {
+      window.location.hash = v;
+    }
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const v = getViewFromLocation();
+      setCurrentViewState(v);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const loadOverview = React.useCallback(() => {
     setLoading(true);

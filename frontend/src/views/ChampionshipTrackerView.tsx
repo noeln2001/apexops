@@ -163,7 +163,7 @@ export const ChampionshipTrackerView: React.FC = () => {
             onChange={(e) => setSelectedDriverId(e.target.value)}
             className="bg-[#12151b] border border-[#2d3748] rounded-lg px-3 py-2 text-xs font-bold text-white outline-none cursor-pointer hover:border-[#f59e0b] transition shadow-sm"
           >
-            {trackerData?.standings.map((d) => (
+            {(trackerData?.standings || []).map((d) => (
               <option key={d.driver_id} value={d.driver_id}>
                 P{d.position} - {d.name} ({d.team})
               </option>

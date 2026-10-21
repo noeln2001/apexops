@@ -14,7 +14,16 @@ import {
   FALLBACK_DRIVER_STANDINGS,
   FALLBACK_CONSTRUCTOR_STANDINGS,
   FALLBACK_CHAMPIONSHIP_TRACKER,
-  FALLBACK_HISTORICAL_CHAMPIONS
+  FALLBACK_HISTORICAL_CHAMPIONS,
+  FALLBACK_RACES,
+  FALLBACK_RACE_DETAILS,
+  FALLBACK_DRIVERS,
+  FALLBACK_CONSTRUCTORS,
+  FALLBACK_CIRCUITS,
+  FALLBACK_RACE_RESULTS,
+  FALLBACK_SIMULATION_RESULT,
+  FALLBACK_MONTE_CARLO_RESPONSE,
+  FALLBACK_DRIVER_COMPARISON
 } from './fallbackData';
 
 export const API_BASE = (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || '/api/v1';
@@ -44,13 +53,19 @@ function setGlobalSource(source: DataSourceMode) {
   }
 }
 
-export async function safeFetchResult<T>(url: string, fallback: T): Promise<FetchResult<T>> {
+export async function safeFetchResult<T>(
+  url: string,
+  fallback: T,
+  validator?: (data: unknown) => boolean
+): Promise<FetchResult<T>> {
   try {
     const res = await fetch(url);
     if (res.ok) {
-      setGlobalSource('live');
       const data = await res.json();
-      return { data, source: 'live' };
+      if (!validator || validator(data)) {
+        setGlobalSource('live');
+        return { data, source: 'live' };
+      }
     }
   } catch (e) {
     // Expected on static hosts like GitHub Pages where /api/v1 is not running
@@ -59,37 +74,41 @@ export async function safeFetchResult<T>(url: string, fallback: T): Promise<Fetc
   return { data: fallback, source: 'fallback' };
 }
 
-async function safeFetch<T>(url: string, fallback: T): Promise<T> {
-  const result = await safeFetchResult(url, fallback);
+async function safeFetch<T>(
+  url: string,
+  fallback: T,
+  validator?: (data: unknown) => boolean
+): Promise<T> {
+  const result = await safeFetchResult(url, fallback, validator);
   return result.data;
 }
 
 export async function fetchOverview(season: number = 2026): Promise<OverviewData> {
-  return safeFetch<OverviewData>(`${API_BASE}/overview?season=${season}`, FALLBACK_OVERVIEW as unknown as OverviewData);
+  return safeFetch<OverviewData>(`${API_BASE}/overview?season=${season}`, FALLBACK_OVERVIEW as unknown as OverviewData, (d: any) => Boolean(d && d.upcoming_event));
 }
 
 export async function fetchDriverStandings(season: number = 2026): Promise<DriverStandingItem[]> {
-  return safeFetch<DriverStandingItem[]>(`${API_BASE}/seasons/${season}/standings/drivers`, FALLBACK_DRIVER_STANDINGS as unknown as DriverStandingItem[]);
+  return safeFetch<DriverStandingItem[]>(`${API_BASE}/seasons/${season}/standings/drivers`, FALLBACK_DRIVER_STANDINGS as unknown as DriverStandingItem[], (d: any) => Array.isArray(d) && d.length > 0 && Boolean(d[0]?.name));
 }
 
 export async function fetchConstructorStandings(season: number = 2026): Promise<ConstructorStandingItem[]> {
-  return safeFetch<ConstructorStandingItem[]>(`${API_BASE}/seasons/${season}/standings/constructors`, FALLBACK_CONSTRUCTOR_STANDINGS as unknown as ConstructorStandingItem[]);
+  return safeFetch<ConstructorStandingItem[]>(`${API_BASE}/seasons/${season}/standings/constructors`, FALLBACK_CONSTRUCTOR_STANDINGS as unknown as ConstructorStandingItem[], (d: any) => Array.isArray(d) && d.length > 0 && Boolean(d[0]?.name));
 }
 
 export async function fetchRaces(season: number = 2026): Promise<RaceItem[]> {
-  return safeFetch<RaceItem[]>(`${API_BASE}/races?season=${season}`, []);
+  return safeFetch<RaceItem[]>(`${API_BASE}/races?season=${season}`, FALLBACK_RACES as unknown as RaceItem[], (d: any) => Array.isArray(d) && d.length > 0);
 }
 
 export async function fetchRaceDetails(raceId: string): Promise<unknown> {
-  return safeFetch(`${API_BASE}/races/${raceId}`, null);
+  return safeFetch(`${API_BASE}/races/${raceId}`, FALLBACK_RACE_DETAILS, (d: any) => Boolean(d && d.circuit));
 }
 
 export async function fetchRaceResults(raceId: string): Promise<unknown> {
-  return safeFetch(`${API_BASE}/races/${raceId}/results`, null);
+  return safeFetch(`${API_BASE}/races/${raceId}/results`, FALLBACK_RACE_RESULTS, (d: any) => Boolean(d && Array.isArray(d.classifications)));
 }
 
 export async function fetchCircuits(): Promise<CircuitItem[]> {
-  return safeFetch<CircuitItem[]>(`${API_BASE}/circuits`, []);
+  return safeFetch<CircuitItem[]>(`${API_BASE}/circuits`, FALLBACK_CIRCUITS as unknown as CircuitItem[], (d: any) => Array.isArray(d) && d.length > 0);
 }
 
 export async function fetchLiveSessionCurrent(): Promise<any> {
@@ -112,15 +131,16 @@ export async function fetchLiveSessionCurrent(): Promise<any> {
 }
 
 export async function fetchDrivers(): Promise<unknown[]> {
-  return safeFetch<unknown[]>(`${API_BASE}/drivers`, []);
+  return safeFetch<unknown[]>(`${API_BASE}/drivers`, FALLBACK_DRIVERS as unknown[], (d: any) => Array.isArray(d) && d.length > 0);
 }
 
 export async function fetchDriverProfile(driverId: string): Promise<unknown> {
-  return safeFetch(`${API_BASE}/drivers/${driverId}`, null);
+  const match = (FALLBACK_DRIVERS as any[]).find(d => d.driver_id === driverId);
+  return safeFetch(`${API_BASE}/drivers/${driverId}`, match || FALLBACK_DRIVERS[0]);
 }
 
 export async function fetchConstructors(): Promise<unknown[]> {
-  return safeFetch<unknown[]>(`${API_BASE}/constructors`, []);
+  return safeFetch<unknown[]>(`${API_BASE}/constructors`, FALLBACK_CONSTRUCTORS as unknown[], (d: any) => Array.isArray(d) && d.length > 0);
 }
 
 export async function fetchTelemetry(raceId: string, driverA: string, driverB: string): Promise<TelemetryData> {
@@ -156,7 +176,7 @@ export async function fetchStrategy(gapSec: number = 2.1, leadComp: string = "ME
 }
 
 export async function fetchChampionshipSimulation(season: number = 2026): Promise<any> {
-  return safeFetch(`${API_BASE}/simulations/championship?season=${season}`, FALLBACK_CHAMPIONSHIP_TRACKER.monte_carlo);
+  return safeFetch(`${API_BASE}/simulations/championship?season=${season}`, FALLBACK_SIMULATION_RESULT, (d: any) => Boolean(d && d.champion));
 }
 
 export async function runCustomSimulation(payload: any): Promise<any> {
@@ -236,7 +256,11 @@ export async function testIsolatedRestore(filename: string): Promise<any> {
 
 // Championship Tracker & Max Verstappen Scenarios API Client
 export async function fetchChampionshipTracker(driverId: string = 'max_verstappen', season: number = 2026): Promise<any> {
-  const result = await safeFetch(`${API_BASE}/championship/tracker?driver_id=${driverId}&season=${season}`, null);
+  const result = await safeFetch(
+    `${API_BASE}/championship/tracker?driver_id=${driverId}&season=${season}`,
+    null,
+    (d: any) => Boolean(d && Array.isArray(d.standings) && d.selected_driver)
+  );
   if (result) {
     try {
       localStorage.setItem('apexops_standings_snapshot', JSON.stringify(result));
@@ -245,13 +269,16 @@ export async function fetchChampionshipTracker(driverId: string = 'max_verstappe
   }
   try {
     const cached = localStorage.getItem('apexops_standings_snapshot');
-    if (cached) return JSON.parse(cached);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && Array.isArray(parsed.standings)) return parsed;
+    }
   } catch {}
   return FALLBACK_CHAMPIONSHIP_TRACKER;
 }
 
 export async function fetchTitleScenarios(driverId: string = 'max_verstappen'): Promise<any> {
-  return safeFetch(`${API_BASE}/championship/scenarios?driver_id=${driverId}`, FALLBACK_CHAMPIONSHIP_TRACKER.scenarios);
+  return safeFetch(`${API_BASE}/championship/scenarios?driver_id=${driverId}`, FALLBACK_CHAMPIONSHIP_TRACKER.scenarios, (d: any) => Boolean(d && Array.isArray(d.scenarios)));
 }
 
 export async function simulateInteractiveScenario(payload: any): Promise<any> {
@@ -261,14 +288,12 @@ export async function simulateInteractiveScenario(payload: any): Promise<any> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (res.ok) return await res.json();
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.champion) return data;
+    }
   } catch (e) {}
-  return {
-    simulated_outcome: "TITLE_SECURED",
-    margin_points: 38,
-    clinch_round: "Round 22",
-    details: payload
-  };
+  return FALLBACK_SIMULATION_RESULT;
 }
 
 export async function runMonteCarloSimulation(payload: any): Promise<any> {
@@ -278,17 +303,20 @@ export async function runMonteCarloSimulation(payload: any): Promise<any> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (res.ok) return await res.json();
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.drivers)) return data;
+    }
   } catch (e) {}
-  return FALLBACK_CHAMPIONSHIP_TRACKER.monte_carlo;
+  return FALLBACK_MONTE_CARLO_RESPONSE;
 }
 
 export async function fetchDriverComparison(driverA: string = 'max_verstappen', driverB: string = 'antonelli'): Promise<any> {
-  return safeFetch(`${API_BASE}/championship/comparison?driver_a=${driverA}&driver_b=${driverB}`, {
-    driver_a: "Max Verstappen",
-    driver_b: "Kimi Antonelli",
-    stats: { wins: [7, 0], poles: [8, 0], points: [331, 48] }
-  });
+  return safeFetch(
+    `${API_BASE}/championship/comparison?driver_a=${driverA}&driver_b=${driverB}`,
+    FALLBACK_DRIVER_COMPARISON,
+    (d: any) => Boolean(d && d.driver_a && d.driver_b && d.driver_a.id)
+  );
 }
 
 export async function fetchHistoricalChampionship(season: number): Promise<any> {

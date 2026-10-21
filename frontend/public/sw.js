@@ -1,9 +1,7 @@
-const CACHE_NAME = 'apexops-shell-v1';
-const STANDINGS_CACHE = 'apexops-standings-v1';
+const CACHE_NAME = 'apexops-shell-v2';
+const DATA_CACHE = 'apexops-data-v2';
 
 const PRECACHE_URLS = [
-  './',
-  './index.html',
   './manifest.json',
   './favicon.svg',
   './f1-logo.svg'
@@ -22,7 +20,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== STANDINGS_CACHE)
+          .filter((name) => name !== CACHE_NAME && name !== DATA_CACHE)
           .map((name) => caches.delete(name))
       );
     }).then(() => self.clients.claim())
@@ -32,19 +30,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Network-first with offline cache fallback for standings, championship, and driver data
-  if (
-    url.pathname.includes('/championship') ||
-    url.pathname.includes('/drivers') ||
-    url.pathname.includes('/races') ||
-    url.pathname.includes('/overview')
-  ) {
+  // API requests: Network-first with data cache
+  if (url.pathname.includes('/api/')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
           if (response && response.status === 200) {
             const clone = response.clone();
-            caches.open(STANDINGS_CACHE).then((cache) => {
+            caches.open(DATA_CACHE).then((cache) => {
               cache.put(event.request, clone);
             });
           }
@@ -53,13 +46,10 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           return caches.match(event.request).then((cached) => {
             if (cached) return cached;
-            // Fallback response for offline standings
+            // Return 503 Service Unavailable so client-side API handler can use rich in-memory fallbacks
             return new Response(
-              JSON.stringify({
-                source: 'offline_cache',
-                message: 'Operating in offline mode. Displaying cached championship standings snapshot.'
-              }),
-              { headers: { 'Content-Type': 'application/json' } }
+              JSON.stringify({ error: 'Backend offline', status: 503 }),
+              { status: 503, headers: { 'Content-Type': 'application/json' } }
             );
           });
         })
@@ -67,14 +57,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first with network fallback for static assets
+  // HTML Navigation: Network-first so updates are applied immediately
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((c) => c || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Versioned static assets: Cache-first with network fallback
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
+      return fetch(event.request).then((response) => {
+        if (response && response.status === 200 && event.request.method === 'GET') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
+        return response;
       });
     })
   );

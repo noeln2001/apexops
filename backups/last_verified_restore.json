@@ -1,12 +1,12 @@
 {
   "status": "SUCCESS",
-  "backup_tested": "apexops_backup_20261021_101034.db",
-  "verified_at": "2026-10-21T10:10:34.321696+00:00Z",
-  "tables_verified": 29,
+  "backup_tested": "apexops_backup_20261021_111321.db",
+  "verified_at": "2026-10-21T11:13:21.439927+00:00Z",
+  "tables_verified": 31,
   "records_sample_races": 23,
   "integrity_result": "ok",
-  "restore_duration_sec": 0.007,
+  "restore_duration_sec": 0.006,
   "rpo_status": "WITHIN_TARGET (< 15 min)",
-  "rto_status": "ACHIEVED (0.007s < 60s target)",
+  "rto_status": "ACHIEVED (0.006s < 60s target)",
   "isolation_guarantee": "VERIFIED (Sandbox environment safely disposed without production interference)"
 }

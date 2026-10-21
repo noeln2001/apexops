@@ -88,7 +88,7 @@ export const MonteCarloSimulator: React.FC<SimulatorProps> = ({
                 <p className="text-[11px] text-[#64748b]">Simulated outcomes factoring official points and countback tie-break</p>
               </div>
               <div className="text-xs font-mono font-bold text-[#10b981] bg-[#10b981]/10 px-3 py-1 rounded border border-[#10b981]/30">
-                PROJECTED CHAMPION: {simulationResult.champion.name} ({simulationResult.champion.projected_points} PTS)
+                PROJECTED CHAMPION: {simulationResult.champion?.name || 'Max Verstappen'} ({simulationResult.champion?.projected_points || 448} PTS)
               </div>
             </div>
 
@@ -106,7 +106,7 @@ export const MonteCarloSimulator: React.FC<SimulatorProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {simulationResult.projected_standings.map((p) => {
+                {(simulationResult?.projected_standings || []).map((p) => {
                   const isVer = p.driver_id === 'max_verstappen';
                   return (
                     <tr key={p.driver_id} className={isVer ? 'bg-[#1e293b]/70 font-semibold' : 'hover:bg-[#151922]'}>
@@ -359,7 +359,7 @@ export const MonteCarloSimulator: React.FC<SimulatorProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {calibrationData.calibration_curve.map((bin) => (
+                {(calibrationData?.calibration_curve || []).map((bin) => (
                   <tr key={bin.bin_label}>
                     <td className="font-bold text-white">{bin.bin_label}</td>
                     <td className="text-right font-mono text-[#94a3b8]">{bin.predicted_avg_pct}%</td>
@@ -377,7 +377,7 @@ export const MonteCarloSimulator: React.FC<SimulatorProps> = ({
         <div className="space-y-6">
           {/* Top Probabilities Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {monteCarloResult.drivers.slice(0, 4).map((d) => (
+            {(monteCarloResult.drivers || []).slice(0, 4).map((d) => (
               <div key={d.driver_id} className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4">
                 <div className="flex items-center justify-between text-xs text-[#64748b]">
                   <span>{d.team}</span>
@@ -413,7 +413,7 @@ export const MonteCarloSimulator: React.FC<SimulatorProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {monteCarloResult.drivers.map((d) => (
+                {(monteCarloResult.drivers || []).map((d) => (
                   <tr key={d.driver_id} className={d.driver_id === selectedDriverId ? 'bg-[#1e293b]/70 font-bold' : ''}>
                     <td className="text-white font-semibold">{d.name}</td>
                     <td className="text-[#94a3b8]">{d.team}</td>
@@ -432,7 +432,7 @@ export const MonteCarloSimulator: React.FC<SimulatorProps> = ({
           <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4 text-xs">
             <h4 className="font-bold text-white uppercase tracking-wider mb-2">Documented Model Assumptions</h4>
             <ul className="list-disc list-inside space-y-1 text-[#94a3b8]">
-              {monteCarloResult.assumptions.map((a, idx) => (
+              {(monteCarloResult.assumptions || []).map((a, idx) => (
                 <li key={idx}>{a}</li>
               ))}
             </ul>

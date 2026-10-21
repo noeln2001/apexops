@@ -144,7 +144,7 @@ export const WeekendCentreView: React.FC<WeekendCentreViewProps> = ({ season }) 
             onChange={(e) => setSelectedRaceId(e.target.value)}
             className="bg-transparent text-white font-bold outline-none cursor-pointer"
           >
-            {allRaces.map((r) => (
+            {(allRaces || []).map((r) => (
               <option key={r.race_id} value={r.race_id} className="bg-[#12151b]">
                 Round {r.round}: {r.name} ({r.status})
               </option>
@@ -216,7 +216,7 @@ export const WeekendCentreView: React.FC<WeekendCentreViewProps> = ({ season }) 
                 </tr>
               </thead>
               <tbody>
-                {liveState.live_positions.map((p) => (
+                {(liveState?.live_positions || []).map((p) => (
                   <tr key={p.driver_number} className="hover:bg-zinc-800/40 font-mono">
                     <td className="text-center font-bold text-white">P{p.position}</td>
                     <td className="font-bold text-white">#{p.driver_number}</td>
@@ -294,7 +294,7 @@ export const WeekendCentreView: React.FC<WeekendCentreViewProps> = ({ season }) 
               <span>Weekend Timetable &amp; Local ({userTimezone}) Windows</span>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              {raceDetails.weekend_schedule.map((item: any, idx: number) => (
+              {(raceDetails?.weekend_schedule || []).map((item: any, idx: number) => (
                 <div key={idx} className="p-3 bg-[#0d1017] border border-[#1f2530] rounded-md space-y-1">
                   <div className="text-[10px] uppercase tracking-wider text-[#64748b] font-semibold">{item.day}</div>
                   <div className="text-xs font-bold text-white">{item.session}</div>

@@ -59,7 +59,7 @@ export const DriverStandingsTable: React.FC<DriverStandingsTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {trackerData.standings.map((d) => {
+            {(trackerData?.standings || []).map((d) => {
               const isHighlighted = d.driver_id === selectedDriverId;
               const isVerstappen = d.driver_id === 'max_verstappen';
               return (
@@ -122,7 +122,7 @@ export const DriverStandingsTable: React.FC<DriverStandingsTableProps> = ({
       <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4">
         <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Remaining 2026 Championship Calendar</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {trackerData.remaining_calendar.map((r) => (
+          {(trackerData?.remaining_calendar || []).map((r) => (
             <div key={r.round} className="p-3 bg-[#0d1016] border border-[#1f2530] rounded-lg">
               <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono">
                 <span>ROUND {r.round}</span>
