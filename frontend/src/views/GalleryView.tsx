@@ -7,23 +7,20 @@ import {
   XCircle,
   Download,
   FolderDown,
-  Maximize2,
-  ExternalLink,
   ShieldCheck,
   FileText,
   SlidersHorizontal,
   RefreshCw,
   Info,
-  Check,
   ChevronDown,
   ChevronUp,
-  Sparkles,
   Eye,
   X,
   Lock
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { FALLBACK_VERIFIED_GALLERY } from '../services/fallbackData';
+import { ImageCard, ImageModal, SourceCompliancePanel } from './gallery';
 
 interface VerifiedImage {
   id: string;
@@ -108,12 +105,6 @@ export const GalleryView: React.FC = () => {
     max_blockiness_ratio: 1.95,
   });
 
-  // Fetch images & sources on mount
-  useEffect(() => {
-    loadGalleryImages();
-    loadSourceCompliance();
-  }, []);
-
   const DEFAULT_SOURCES: SourceCompliance[] = [
     {
       name: "Wikimedia Commons",
@@ -161,7 +152,7 @@ export const GalleryView: React.FC = () => {
           return;
         }
       }
-    } catch (err) {
+    } catch {
       // Expected on static GitHub Pages
     }
     setImages(FALLBACK_VERIFIED_GALLERY as any);
@@ -178,9 +169,15 @@ export const GalleryView: React.FC = () => {
           return;
         }
       }
-    } catch (err) {}
+    } catch {}
     setSources(DEFAULT_SOURCES);
   };
+
+  // Fetch images & sources on mount
+  useEffect(() => {
+    loadGalleryImages();
+    loadSourceCompliance();
+  }, []);
 
   const handleDiscover = async () => {
     setIsSearching(true);
@@ -442,40 +439,7 @@ export const GalleryView: React.FC = () => {
 
       {/* Honest Source Compliance & Licensing Audit Drawer */}
       {showCompliance && (
-        <div className="p-4 bg-[#0d1117] border border-[#30363d] rounded-lg space-y-3 animate-fadeIn">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#38bdf8]" />
-              Permitted Web Sources & Compliance Audit
-            </h3>
-            <span className="text-[11px] text-[#64748b]">
-              Zero bypass of logins, paywalls, or CAPTCHAs &bull; SSRF Protected
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {sources.map((src, i) => (
-              <div key={i} className="p-3 bg-[#161b22] border border-[#21262d] rounded text-xs space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-white">{src.name}</span>
-                  <span
-                    className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                      src.status === 'AVAILABLE'
-                        ? 'bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/30'
-                        : src.status === 'AVAILABLE_SELECTIVE'
-                        ? 'bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/30'
-                        : 'bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/30'
-                    }`}
-                  >
-                    {src.status}
-                  </span>
-                </div>
-                <div className="text-[11px] text-[#8b949e]">{src.details}</div>
-                <div className="text-[10px] text-[#58a6ff] truncate">License: {src.license_compliance}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <SourceCompliancePanel sources={sources} onClose={() => setShowCompliance(false)} />
       )}
 
       {/* CV Verification Thresholds Config Drawer */}
@@ -818,223 +782,20 @@ export const GalleryView: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {filteredImages.map((img) => {
-            const isSelected = selectedIds.has(img.id);
-            const isExcellent = img.classification === 'EXCELLENT';
-            const isGood = img.classification === 'GOOD';
-            const isReview = img.classification === 'REVIEW';
-            const isRejected = img.classification === 'REJECTED';
-
-            return (
-              <div
-                key={img.id}
-                className={`bg-[#0e1118] border rounded-xl overflow-hidden flex flex-col transition hover:border-[#38bdf8]/50 shadow-md ${
-                  isSelected ? 'border-[#e10600] ring-1 ring-[#e10600]' : 'border-[#1e2533]'
-                }`}
-              >
-                {/* Image Preview with Badges */}
-                <div className="relative aspect-video bg-[#05070a] overflow-hidden group">
-                  <img
-                    src={img.original_url}
-                    alt={img.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
-                  />
-
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0e1118] via-transparent to-black/60 pointer-events-none" />
-
-                  {/* Checkbox */}
-                  <button
-                    onClick={() => toggleSelect(img.id)}
-                    className={`absolute top-2.5 left-2.5 w-6 h-6 rounded flex items-center justify-center border cursor-pointer transition ${
-                      isSelected
-                        ? 'bg-[#e10600] border-[#e10600] text-white'
-                        : 'bg-black/60 border-white/40 text-transparent hover:border-white'
-                    }`}
-                  >
-                    <Check className="w-4 h-4 stroke-[3]" />
-                  </button>
-
-                  {/* Classification Pill */}
-                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
-                    <span
-                      className={`text-[10px] font-extrabold px-2 py-0.5 rounded shadow flex items-center gap-1 ${
-                        isExcellent
-                          ? 'bg-[#10b981] text-black'
-                          : isGood
-                          ? 'bg-[#38bdf8] text-black'
-                          : isReview
-                          ? 'bg-[#f59e0b] text-black'
-                          : 'bg-[#ef4444] text-white'
-                      }`}
-                    >
-                      {isExcellent && <Sparkles className="w-3 h-3" />}
-                      {isReview && <AlertTriangle className="w-3 h-3" />}
-                      {img.classification}
-                    </span>
-                  </div>
-
-                  {/* Resolution & Dimension Pill */}
-                  <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-black/80 text-white border border-white/20">
-                      {img.resolution_label} ({img.width} &times; {img.height})
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/80 text-[#94a3b8] border border-white/10">
-                      {img.orientation}
-                    </span>
-                  </div>
-
-                  {/* Fullscreen Preview Trigger */}
-                  <button
-                    onClick={() => setPreviewImage(img)}
-                    className="absolute bottom-2.5 right-2.5 p-1.5 rounded-full bg-black/70 hover:bg-[#e10600] text-white transition cursor-pointer border border-white/20"
-                    title="Inspect Full Original Resolution"
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Card Body & Provenance */}
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between text-[11px] text-[#64748b]">
-                      <span className="font-semibold text-[#e10600] truncate max-w-[150px]">{img.team}</span>
-                      <span className="text-white font-medium">{img.driver}</span>
-                    </div>
-
-                    <h4 className="text-xs font-semibold text-white mt-1 line-clamp-1" title={img.title}>
-                      {img.title}
-                    </h4>
-
-                    {img.description && (
-                      <p className="text-[11px] text-[#8b949e] mt-1 line-clamp-2">{img.description}</p>
-                    )}
-                  </div>
-
-                  {/* Computer Vision Metrics Chip */}
-                  <div className="p-2.5 bg-[#080a0f] border border-[#1a202c] rounded text-[10px] space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#64748b]">Laplacian Sharpness:</span>
-                      <span
-                        className={`font-mono font-bold ${
-                          img.metrics?.sharpness_laplacian >= 100
-                            ? 'text-[#10b981]'
-                            : img.metrics?.sharpness_laplacian >= 50
-                            ? 'text-[#38bdf8]'
-                            : 'text-[#f59e0b]'
-                        }`}
-                      >
-                        {img.metrics?.sharpness_laplacian ?? 'N/A'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#64748b]">File Size & Format:</span>
-                      <span className="text-[#cbd5e1] font-mono">
-                        {img.file_size_mb} MB &bull; {img.format}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#64748b]">JPEG Blockiness:</span>
-                      <span className="text-[#cbd5e1] font-mono">
-                        {img.metrics?.blockiness_ratio ?? 1.0} ratio
-                      </span>
-                    </div>
-
-                    {img.reasons && img.reasons.length > 0 && (
-                      <div className="pt-1 text-[9px] text-[#94a3b8] border-t border-[#161d2b]">
-                        {img.reasons[0]}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Source & Attribution Footer */}
-                  <div className="pt-2 border-t border-[#1a202c] flex items-center justify-between text-[10px] text-[#64748b]">
-                    <div className="truncate max-w-[180px]">
-                      <span className="text-white font-medium">{img.author}</span> &bull; {img.license}
-                    </div>
-
-                    <a
-                      href={img.source_page}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#38bdf8] hover:underline flex items-center gap-1"
-                    >
-                      Source <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {filteredImages.map((img) => (
+            <ImageCard
+              key={img.id}
+              image={img as any}
+              isSelected={selectedIds.has(img.id)}
+              onToggleSelect={toggleSelect}
+              onPreview={setPreviewImage}
+            />
+          ))}
         </div>
       )}
 
       {/* Fullscreen Original Resolution Preview Modal */}
-      {previewImage && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0b0e14] border border-[#2d3748] rounded-xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-fadeIn">
-            {/* Modal Header */}
-            <div className="p-3.5 bg-[#12161f] border-b border-[#1e2533] flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  {previewImage.title}
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#10b981]/20 text-[#10b981] font-bold">
-                    {previewImage.resolution_label} ({previewImage.width} &times; {previewImage.height})
-                  </span>
-                </h3>
-                <div className="text-[11px] text-[#94a3b8]">
-                  {previewImage.driver} &bull; {previewImage.team} &bull; {previewImage.file_size_mb} MB
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <a
-                  href={previewImage.original_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1 bg-[#1e2533] hover:bg-[#2b3548] text-white rounded text-xs flex items-center gap-1 transition"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Open Raw URL
-                </a>
-
-                <button
-                  onClick={() => setPreviewImage(null)}
-                  className="p-1 rounded text-[#94a3b8] hover:text-white cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Image Viewer */}
-            <div className="flex-1 bg-black flex items-center justify-center overflow-auto p-2">
-              <img
-                src={previewImage.original_url}
-                alt={previewImage.title}
-                className="max-h-[65vh] w-auto object-contain rounded"
-              />
-            </div>
-
-            {/* Modal Details Footer */}
-            <div className="p-3 bg-[#12161f] border-t border-[#1e2533] text-xs flex flex-wrap items-center justify-between gap-3 text-[#94a3b8]">
-              <div>
-                <span className="text-[#64748b]">SHA-256: </span>
-                <span className="font-mono text-white text-[11px]">{previewImage.sha256}</span>
-              </div>
-
-              <div>
-                <span className="text-[#64748b]">License: </span>
-                <span className="text-white font-medium">{previewImage.license}</span> &bull; Author:{' '}
-                <span className="text-white font-medium">{previewImage.author}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImageModal image={previewImage} onClose={() => setPreviewImage(null)} />
     </div>
   );
 };

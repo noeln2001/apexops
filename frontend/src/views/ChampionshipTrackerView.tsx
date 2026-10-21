@@ -1,24 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Trophy,
-  Award,
   Zap,
-  TrendingUp,
   Cpu,
-  BarChart3,
   Calendar,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Shield,
   RefreshCw,
   Sliders,
-  ChevronRight,
-  Flame,
-  Target,
-  ArrowUpRight,
-  ArrowDownRight,
-  Sparkles
+  Target
 } from 'lucide-react';
 import {
   fetchChampionshipTracker,
@@ -31,14 +19,19 @@ import {
 } from '../services/api';
 import {
   ChampionshipTrackerData,
-  ChampionshipDriver,
   TitleScenariosResponse,
   InteractiveSimulationResult,
   MonteCarloResponse,
   DriverComparisonData
 } from '../types';
-
-const roundNumber = (val: number): number => Math.round(val * 10) / 10;
+import {
+  DriverStandingsTable,
+  TitleScenariosCard,
+  MonteCarloSimulator,
+  DriverComparisonCard,
+  HistoricalChampionsView
+} from './championship';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 
 export const ChampionshipTrackerView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'scenarios' | 'simulator' | 'probability' | 'comparison' | 'history'>('overview');
@@ -56,13 +49,12 @@ export const ChampionshipTrackerView: React.FC = () => {
   const [mcLoading, setMcLoading] = useState<boolean>(false);
   const [simPreset, setSimPreset] = useState<string>('max_wins_austin');
 
-  // Load tracker and scenario data
-  const loadTracker = (driverId: string = selectedDriverId) => {
+  const loadTracker = useCallback((driverId: string, rivalId: string) => {
     setLoading(true);
     Promise.all([
       fetchChampionshipTracker(driverId),
       fetchTitleScenarios(driverId),
-      fetchDriverComparison(driverId, comparisonRivalId)
+      fetchDriverComparison(driverId, rivalId)
     ])
       .then(([tData, sData, cData]) => {
         setTrackerData(tData);
@@ -74,27 +66,34 @@ export const ChampionshipTrackerView: React.FC = () => {
         console.error('Failed to load championship tracker:', err);
         setLoading(false);
       });
-  };
+  }, []);
 
   useEffect(() => {
-    loadTracker(selectedDriverId);
-  }, [selectedDriverId]);
+    loadTracker(selectedDriverId, comparisonRivalId);
+  }, [selectedDriverId, loadTracker, comparisonRivalId]);
 
-  // Load default simulation on mount
   useEffect(() => {
     simulateInteractiveScenario({ preset: 'max_wins_austin', target_driver_id: selectedDriverId })
       .then((res) => setSimulationResult(res))
       .catch((err) => console.error('Sim error:', err));
   }, [selectedDriverId]);
 
-  // Load Monte Carlo when tab selected
+  const handleRunMonteCarlo = useCallback((runs: number = 10000) => {
+    setMcLoading(true);
+    runMonteCarloSimulation({ iterations: runs, random_seed: 42 })
+      .then((res) => {
+        setMonteCarloResult(res);
+        setMcLoading(false);
+      })
+      .catch(() => setMcLoading(false));
+  }, []);
+
   useEffect(() => {
     if (activeTab === 'probability' && !monteCarloResult) {
       handleRunMonteCarlo(1000);
     }
-  }, [activeTab]);
+  }, [activeTab, monteCarloResult, handleRunMonteCarlo]);
 
-  // Load historical when season changes or history tab is selected
   useEffect(() => {
     if (activeTab === 'history') {
       if (championsList.length === 0) {
@@ -106,17 +105,7 @@ export const ChampionshipTrackerView: React.FC = () => {
         .then((res) => setHistoricalData(res))
         .catch((err) => console.error('History error:', err));
     }
-  }, [activeTab, historicalSeason]);
-
-  const handleRunMonteCarlo = (runs: number = 10000) => {
-    setMcLoading(true);
-    runMonteCarloSimulation({ iterations: runs, random_seed: 42 })
-      .then((res) => {
-        setMonteCarloResult(res);
-        setMcLoading(false);
-      })
-      .catch(() => setMcLoading(false));
-  };
+  }, [activeTab, historicalSeason, championsList.length]);
 
   const handleRunPreset = (presetKey: string) => {
     setSimPreset(presetKey);
@@ -134,9 +123,8 @@ export const ChampionshipTrackerView: React.FC = () => {
 
   if (loading && !trackerData) {
     return (
-      <div className="p-16 text-center text-xs text-[#64748b] flex flex-col items-center justify-center space-y-3">
-        <RefreshCw className="w-6 h-6 animate-spin text-[#e10600]" />
-        <span>Calculating FIA World Championship Standings & Title Scenarios...</span>
+      <div className="space-y-4">
+        <LoadingSkeleton lines={8} />
       </div>
     );
   }
@@ -160,38 +148,40 @@ export const ChampionshipTrackerView: React.FC = () => {
             <span>F1 Championship Tracker &amp; Max Verstappen Title Scenarios</span>
           </h1>
           <p className="text-xs text-[#94a3b8]">
-            Live mathematical eligibility, points swing boundaries, Monte Carlo probabilities, and tactical championship paths
+            Official FIA mathematical points tracker, live elimination thresholds, and title clinch permutations
           </p>
         </div>
 
-        {/* Driver Selector Dropdown */}
-        <div className="flex items-center space-x-2">
-          <label className="text-xs text-[#64748b] font-semibold">TRACK DRIVER:</label>
+        {/* Driver Selector */}
+        <div className="flex items-center space-x-3">
+          <div className="text-right hidden sm:block">
+            <div className="text-[10px] uppercase font-bold text-[#64748b]">Focus Driver</div>
+            <div className="text-xs font-semibold text-white">Select title candidate</div>
+          </div>
           <select
             value={selectedDriverId}
             onChange={(e) => setSelectedDriverId(e.target.value)}
-            className="bg-[#151922] border border-[#2d3748] rounded px-3 py-1.5 text-xs font-bold text-white outline-none cursor-pointer hover:border-[#e10600] transition"
+            className="bg-[#12151b] border border-[#2d3748] rounded-lg px-3 py-2 text-xs font-bold text-white outline-none cursor-pointer hover:border-[#f59e0b] transition shadow-sm"
           >
             {trackerData?.standings.map((d) => (
               <option key={d.driver_id} value={d.driver_id}>
-                {d.driver_id === 'max_verstappen' ? '★ ' : ''}P{d.position} - {d.name} ({d.team})
+                P{d.position} - {d.name} ({d.team})
               </option>
             ))}
           </select>
-
           <button
-            onClick={() => loadTracker()}
-            className="p-1.5 bg-[#171d28] hover:bg-[#202735] border border-[#273245] rounded text-white transition cursor-pointer"
-            title="Refresh Standings"
+            onClick={() => loadTracker(selectedDriverId, comparisonRivalId)}
+            className="p-2 bg-[#171d28] hover:bg-[#202735] border border-[#273245] rounded-lg text-white transition cursor-pointer"
+            title="Refresh Championship Calculator"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#f59e0b]' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Hero Spotlight Card: Target Driver (Default Max Verstappen) */}
+      {/* Driver Spotlight Banner */}
       {selectedDriver && (
-        <div className={`p-5 rounded-xl border relative overflow-hidden shadow-lg ${
+        <div className={`p-6 rounded-xl border relative overflow-hidden transition-all ${
           isMax
             ? 'bg-gradient-to-r from-[#0c121e] via-[#10192a] to-[#1a120c] border-[#f59e0b]/40 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
             : 'bg-[#12151b] border-[#1f2530]'
@@ -334,776 +324,62 @@ export const ChampionshipTrackerView: React.FC = () => {
         </button>
       </div>
 
-      {/* ==================================================================== */}
-      {/* SECTION 1: CHAMPIONSHIP OVERVIEW & STANDINGS TABLE */}
-      {/* ==================================================================== */}
+      {/* Active Tab Views */}
       {activeTab === 'overview' && trackerData && (
-        <div className="space-y-6">
-          {/* Summary Alert */}
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-[#10b981]/20 border border-[#10b981]/40 flex items-center justify-center text-[#10b981]">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase">Official FIA 2026 Season Standing State</h4>
-                <p className="text-[11px] text-[#94a3b8]">
-                  {trackerData.summary.active_contenders_count} drivers remain mathematically in contention for the Drivers' World Championship.
-                </p>
-              </div>
-            </div>
-            <div className="text-[11px] text-[#64748b] font-mono">
-              Provenance: <strong className="text-white">{trackerData.data_provenance.source}</strong> (Round 17 Validated)
-            </div>
-          </div>
-
-          {/* Standings Table */}
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg overflow-x-auto shadow-sm">
-            <div className="p-4 border-b border-[#1f2530] flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-white">2026 World Drivers' Championship Standings</h3>
-                <p className="text-[11px] text-[#64748b]">Mathematical points ceiling, gaps, and elimination boundaries</p>
-              </div>
-              <span className="text-[10px] font-mono text-[#64748b]">6 RACES / 3 SPRINTS REMAINING</span>
-            </div>
-
-            <table className="w-full text-left text-xs table-f1">
-              <thead>
-                <tr>
-                  <th>POS</th>
-                  <th>DRIVER</th>
-                  <th>TEAM</th>
-                  <th className="text-right">PTS</th>
-                  <th className="text-right">GAP TO LEAD</th>
-                  <th className="text-right">AHEAD</th>
-                  <th className="text-right">BEHIND</th>
-                  <th className="text-center">WINS</th>
-                  <th className="text-right">MAX POSSIBLE</th>
-                  <th className="text-center">STATUS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trackerData.standings.map((d) => {
-                  const isHighlighted = d.driver_id === selectedDriverId;
-                  const isVerstappen = d.driver_id === 'max_verstappen';
-                  return (
-                    <tr
-                      key={d.driver_id}
-                      onClick={() => setSelectedDriverId(d.driver_id)}
-                      className={`cursor-pointer transition ${
-                        isHighlighted
-                          ? 'bg-[#1e293b]/70 border-l-4 border-l-[#f59e0b]'
-                          : isVerstappen
-                          ? 'bg-[#181a24] hover:bg-[#202735]'
-                          : 'hover:bg-[#151922]'
-                      }`}
-                    >
-                      <td className="font-mono font-bold text-white">
-                        {d.position === 1 ? '🥇 1' : d.position === 2 ? '🥈 2' : d.position === 3 ? '🥉 3' : d.position}
-                      </td>
-                      <td className="font-semibold text-white">
-                        <div className="flex items-center space-x-1.5">
-                          <span>{d.name}</span>
-                          {isVerstappen && (
-                            <span className="px-1.5 py-0.2 text-[9px] font-bold bg-[#f59e0b]/20 text-[#f59e0b] rounded">
-                              VER 33
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="text-[#94a3b8]">{d.team}</td>
-                      <td className="text-right font-mono font-black text-white">{d.current_points}</td>
-                      <td className="text-right font-mono text-[#f59e0b]">
-                        {d.points_gap_to_leader === 0 ? '-' : `-${d.points_gap_to_leader}`}
-                      </td>
-                      <td className="text-right font-mono text-[#64748b]">
-                        {d.points_gap_to_ahead === 0 ? '-' : `-${d.points_gap_to_ahead}`}
-                      </td>
-                      <td className="text-right font-mono text-[#64748b]">
-                        {d.points_gap_to_behind === 0 ? '-' : `+${d.points_gap_to_behind}`}
-                      </td>
-                      <td className="text-center font-mono font-bold text-white">{d.wins}</td>
-                      <td className="text-right font-mono font-bold text-[#38bdf8]">{d.max_achievable_points}</td>
-                      <td className="text-center">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                          d.status === 'CONTENDER'
-                            ? 'bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/40'
-                            : d.status === 'CLINCHED'
-                            ? 'bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/40'
-                            : 'bg-[#ef4444]/20 text-[#ef4444] border border-[#ef4444]/40'
-                        }`}>
-                          {d.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Remaining Calendar Matrix */}
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Remaining 2026 Championship Calendar</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {trackerData.remaining_calendar.map((r) => (
-                <div key={r.round} className="p-3 bg-[#0d1016] border border-[#1f2530] rounded-lg">
-                  <div className="flex items-center justify-between text-[10px] text-[#64748b] font-mono">
-                    <span>ROUND {r.round}</span>
-                    {r.has_sprint && (
-                      <span className="px-1.5 py-0.2 bg-[#a855f7]/20 text-[#a855f7] rounded font-bold">
-                        SPRINT WEEKEND (+8 PTS)
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm font-bold text-white mt-1">{r.name}</div>
-                  <div className="text-[11px] text-[#94a3b8] mt-0.5">{r.circuit_name}</div>
-                  <div className="text-[10px] text-[#38bdf8] font-mono mt-2">
-                    Date: {r.date} | Max Points: {r.has_sprint ? '34 PTS' : '26 PTS'}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <DriverStandingsTable
+          trackerData={trackerData}
+          selectedDriverId={selectedDriverId}
+          onSelectDriver={(id) => setSelectedDriverId(id)}
+        />
       )}
 
-      {/* ==================================================================== */}
-      {/* SECTION 2: MAX VERSTAPPEN TITLE SCENARIOS */}
-      {/* ==================================================================== */}
       {activeTab === 'scenarios' && scenariosData && (
-        <div className="space-y-6">
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                <Flame className="w-4 h-4 text-[#e10600]" />
-                <span>Tactical Scenario Engine: Path to the 2026 World Championship</span>
-              </h3>
-              <p className="text-xs text-[#94a3b8] mt-0.5">
-                Evaluates every major race scenario, point swing, leader retirement, and elimination risk
-              </p>
-            </div>
-            <div className="text-xs font-mono text-[#f59e0b] bg-[#1a202c] px-3 py-1.5 rounded border border-[#2d3748]">
-              Current Deficit: <strong>{scenariosData.starting_deficit} PTS</strong> (180 Available)
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {scenariosData.scenarios.map((scen) => (
-              <div
-                key={scen.id}
-                className="bg-[#12151b] border border-[#1f2530] hover:border-[#2d3748] rounded-lg p-5 transition flex flex-col justify-between space-y-4"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase ${
-                      scen.category === 'BEST_CASE'
-                        ? 'bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/40'
-                        : scen.category === 'TACTICAL_SWING'
-                        ? 'bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/40'
-                        : scen.category === 'RIVAL_MISFORTUNE'
-                        ? 'bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/40'
-                        : scen.category === 'ELIMINATION_RISK'
-                        ? 'bg-[#ef4444]/20 text-[#ef4444] border border-[#ef4444]/40'
-                        : 'bg-[#a855f7]/20 text-[#a855f7] border border-[#a855f7]/40'
-                    }`}>
-                      {scen.category.replace('_', ' ')}
-                    </span>
-                    <span className={`text-xs font-mono font-bold ${scen.target_wins_championship ? 'text-[#10b981]' : 'text-white'}`}>
-                      {scen.target_wins_championship ? '★ CHAMPIONSHIP WIN' : 'CONTENDER'}
-                    </span>
-                  </div>
-
-                  <h4 className="text-sm font-bold text-white">{scen.title}</h4>
-                  <p className="text-xs text-[#94a3b8]">{scen.description}</p>
-                </div>
-
-                {/* Score Swing Bar */}
-                <div className="bg-[#0b0e14] border border-[#1f2530] rounded p-3 text-xs font-mono space-y-1">
-                  <div className="flex justify-between text-[#94a3b8]">
-                    <span>Target Points Gain:</span>
-                    <strong className="text-[#10b981]">+{scen.target_gained_points} pts ({scen.target_final_points} total)</strong>
-                  </div>
-                  <div className="flex justify-between text-[#94a3b8]">
-                    <span>Leader Assumed Gain:</span>
-                    <strong className="text-[#f59e0b]">+{scen.leader_assumed_gain} pts ({scen.leader_final_points} total)</strong>
-                  </div>
-                  <div className="flex justify-between border-t border-[#1f2530] pt-1">
-                    <span className="text-white font-bold">New Points Margin:</span>
-                    <strong className={scen.resulting_points_difference <= 0 ? 'text-[#10b981]' : 'text-[#f59e0b]'}>
-                      {scen.resulting_points_difference <= 0 ? `LEADS BY ${Math.abs(scen.resulting_points_difference)} PTS` : `TRAILS BY ${scen.resulting_points_difference} PTS`}
-                    </strong>
-                  </div>
-                </div>
-
-                {/* Plain-English Explanation */}
-                <div className="p-3 bg-[#151922] border-l-2 border-l-[#e10600] rounded text-[11px] text-[#cbd5e1] leading-relaxed">
-                  {scen.explanation}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <TitleScenariosCard scenariosData={scenariosData} />
       )}
 
-      {/* ==================================================================== */}
-      {/* SECTION 3: RACE-BY-RACE SIMULATOR */}
-      {/* ==================================================================== */}
       {activeTab === 'simulator' && (
-        <div className="space-y-6">
-          {/* Quick Presets Bar */}
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">Simulation Quick Actions</h3>
-            <p className="text-xs text-[#94a3b8] mb-3">
-              Apply realistic race outcomes to Austin, Mexico, Brazil, Las Vegas, Qatar, and Abu Dhabi
-            </p>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <button
-                onClick={() => handleRunPreset('max_wins_austin')}
-                className={`px-3 py-1.5 rounded font-bold transition cursor-pointer ${
-                  simPreset === 'max_wins_austin'
-                    ? 'bg-[#e10600] text-white'
-                    : 'bg-[#1a2230] text-[#94a3b8] hover:text-white'
-                }`}
-              >
-                Max Wins Austin GP &amp; Sprint
-              </button>
-
-              <button
-                onClick={() => handleRunPreset('max_wins_all')}
-                className={`px-3 py-1.5 rounded font-bold transition cursor-pointer ${
-                  simPreset === 'max_wins_all'
-                    ? 'bg-[#e10600] text-white'
-                    : 'bg-[#1a2230] text-[#94a3b8] hover:text-white'
-                }`}
-              >
-                Max Wins All 6 Remaining Races
-              </button>
-
-              <button
-                onClick={() => handleRunPreset('max_wins_leader_dnf')}
-                className={`px-3 py-1.5 rounded font-bold transition cursor-pointer ${
-                  simPreset === 'max_wins_leader_dnf'
-                    ? 'bg-[#e10600] text-white'
-                    : 'bg-[#1a2230] text-[#94a3b8] hover:text-white'
-                }`}
-              >
-                Leader DNF in Austin (Max P1)
-              </button>
-
-              <button
-                onClick={() => handleRunPreset('max_wins_leader_p5')}
-                className={`px-3 py-1.5 rounded font-bold transition cursor-pointer ${
-                  simPreset === 'max_wins_leader_p5'
-                    ? 'bg-[#e10600] text-white'
-                    : 'bg-[#1a2230] text-[#94a3b8] hover:text-white'
-                }`}
-              >
-                Max P1, Leader P5 (All Remaining)
-              </button>
-
-              <button
-                onClick={() => handleRunPreset('max_p2')}
-                className={`px-3 py-1.5 rounded font-bold transition cursor-pointer ${
-                  simPreset === 'max_p2'
-                    ? 'bg-[#e10600] text-white'
-                    : 'bg-[#1a2230] text-[#94a3b8] hover:text-white'
-                }`}
-              >
-                Max Finishes P2 in All Sessions
-              </button>
-            </div>
-          </div>
-
-          {/* Projected Outcome Leaderboard */}
-          {simulationResult && (
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg overflow-x-auto shadow-sm">
-              <div className="p-4 border-b border-[#1f2530] flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-white">Projected Championship Standings</h3>
-                  <p className="text-[11px] text-[#64748b]">Simulated outcomes factoring official points and countback tie-break</p>
-                </div>
-                <div className="text-xs font-mono font-bold text-[#10b981] bg-[#10b981]/10 px-3 py-1 rounded border border-[#10b981]/30">
-                  PROJECTED CHAMPION: {simulationResult.champion.name} ({simulationResult.champion.projected_points} PTS)
-                </div>
-              </div>
-
-              <table className="w-full text-left text-xs table-f1">
-                <thead>
-                  <tr>
-                    <th>PROJ POS</th>
-                    <th>DRIVER</th>
-                    <th>TEAM</th>
-                    <th className="text-right">START PTS</th>
-                    <th className="text-right">PTS GAINED</th>
-                    <th className="text-right">PROJECTED PTS</th>
-                    <th className="text-center">PROJ WINS</th>
-                    <th className="text-center">RANK SHIFT</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {simulationResult.projected_standings.map((p) => {
-                    const isVer = p.driver_id === 'max_verstappen';
-                    return (
-                      <tr key={p.driver_id} className={isVer ? 'bg-[#1e293b]/70 font-semibold' : 'hover:bg-[#151922]'}>
-                        <td className="font-mono font-bold text-white">P{p.projected_position}</td>
-                        <td className="font-bold text-white">
-                          {p.name} {isVer ? '★' : ''}
-                        </td>
-                        <td className="text-[#94a3b8]">{p.team}</td>
-                        <td className="text-right font-mono text-[#64748b]">{p.starting_points}</td>
-                        <td className="text-right font-mono text-[#10b981]">+{p.points_gained}</td>
-                        <td className="text-right font-mono font-black text-white">{p.projected_points}</td>
-                        <td className="text-center font-mono text-white">{p.projected_wins}</td>
-                        <td className="text-center font-mono">
-                          {p.position_change > 0 ? (
-                            <span className="text-[#10b981] font-bold">▲ +{p.position_change}</span>
-                          ) : p.position_change < 0 ? (
-                            <span className="text-[#ef4444] font-bold">▼ {p.position_change}</span>
-                          ) : (
-                            <span className="text-[#64748b]">-</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <MonteCarloSimulator
+          mode="simulator"
+          simPreset={simPreset}
+          onRunPreset={handleRunPreset}
+          simulationResult={simulationResult}
+          mcLoading={mcLoading}
+          monteCarloResult={monteCarloResult}
+          onRunMonteCarlo={handleRunMonteCarlo}
+          selectedDriverId={selectedDriverId}
+        />
       )}
 
-      {/* ==================================================================== */}
-      {/* SECTION 4: TITLE PROBABILITY (MONTE CARLO) */}
-      {/* ==================================================================== */}
       {activeTab === 'probability' && (
-        <div className="space-y-6">
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                <Cpu className="w-4 h-4 text-[#a855f7]" />
-                <span>Monte Carlo Title Probability Simulation</span>
-              </h3>
-              <p className="text-xs text-[#94a3b8]">
-                Stochastic modeling across remaining 6 Grands Prix and 3 Sprints incorporating pace weights and DNF hazard rates
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                disabled={mcLoading}
-                onClick={() => handleRunMonteCarlo(1000)}
-                className="px-3 py-1.5 bg-[#171d28] hover:bg-[#202735] border border-[#273245] rounded text-xs font-semibold text-white transition cursor-pointer"
-              >
-                1,000 Runs
-              </button>
-              <button
-                disabled={mcLoading}
-                onClick={() => handleRunMonteCarlo(10000)}
-                className="px-3 py-1.5 bg-[#171d28] hover:bg-[#202735] border border-[#273245] rounded text-xs font-semibold text-white transition cursor-pointer"
-              >
-                10,000 Runs
-              </button>
-              <button
-                disabled={mcLoading}
-                onClick={() => handleRunMonteCarlo(50000)}
-                className="px-3 py-1.5 bg-[#e10600] hover:bg-[#b50500] rounded text-xs font-bold text-white transition cursor-pointer"
-              >
-                50,000 Runs
-              </button>
-            </div>
-          </div>
-
-          {mcLoading ? (
-            <div className="p-16 text-center text-xs text-[#64748b] flex flex-col items-center justify-center space-y-3">
-              <RefreshCw className="w-6 h-6 animate-spin text-[#a855f7]" />
-              <span>Simulating thousands of season outcomes...</span>
-            </div>
-          ) : monteCarloResult ? (
-            <div className="space-y-6">
-              {/* Top Probabilities Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {monteCarloResult.drivers.slice(0, 4).map((d) => (
-                  <div key={d.driver_id} className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4">
-                    <div className="flex items-center justify-between text-xs text-[#64748b]">
-                      <span>{d.team}</span>
-                      <span className="font-mono">P{d.expected_championship_position.toFixed(1)}</span>
-                    </div>
-                    <div className="text-lg font-bold text-white mt-1">{d.name}</div>
-                    <div className="text-2xl font-black font-mono text-[#a855f7] mt-1">{d.championship_prob_pct}%</div>
-                    <div className="text-[10px] text-[#94a3b8] mt-1 font-mono">
-                      Top 3 Finish: {d.top3_prob_pct}% | Exp Points: {d.expected_final_points} (±{d.points_std_dev})
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Simulation Driver Probabilities Table */}
-              <div className="bg-[#12151b] border border-[#1f2530] rounded-lg overflow-x-auto shadow-sm">
-                <div className="p-4 border-b border-[#1f2530]">
-                  <h3 className="text-sm font-bold text-white">Full Contender Probability Distribution</h3>
-                  <p className="text-[11px] text-[#64748b]">
-                    Executed {monteCarloResult.iterations.toLocaleString()} iterations in {monteCarloResult.execution_duration_sec}s
-                  </p>
-                </div>
-                <table className="w-full text-left text-xs table-f1">
-                  <thead>
-                    <tr>
-                      <th>DRIVER</th>
-                      <th>TEAM</th>
-                      <th className="text-right">CURRENT PTS</th>
-                      <th className="text-right">TITLE WIN %</th>
-                      <th className="text-right">TOP 3 FINISH %</th>
-                      <th className="text-right">EXPECTED FINAL PTS</th>
-                      <th className="text-center">EXP FINISH RANK</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {monteCarloResult.drivers.map((d) => (
-                      <tr key={d.driver_id} className={d.driver_id === selectedDriverId ? 'bg-[#1e293b]/70 font-bold' : ''}>
-                        <td className="text-white font-semibold">{d.name}</td>
-                        <td className="text-[#94a3b8]">{d.team}</td>
-                        <td className="text-right font-mono text-white">{d.current_points}</td>
-                        <td className="text-right font-mono font-bold text-[#a855f7]">{d.championship_prob_pct}%</td>
-                        <td className="text-right font-mono text-[#38bdf8]">{d.top3_prob_pct}%</td>
-                        <td className="text-right font-mono text-white">{d.expected_final_points} pts</td>
-                        <td className="text-center font-mono text-[#94a3b8]">P{d.expected_championship_position}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Model Assumptions Card */}
-              <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4 text-xs">
-                <h4 className="font-bold text-white uppercase tracking-wider mb-2">Documented Model Assumptions</h4>
-                <ul className="list-disc list-inside space-y-1 text-[#94a3b8]">
-                  {monteCarloResult.assumptions.map((a, idx) => (
-                    <li key={idx}>{a}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : null}
-        </div>
+        <MonteCarloSimulator
+          mode="probability"
+          simPreset={simPreset}
+          onRunPreset={handleRunPreset}
+          simulationResult={simulationResult}
+          mcLoading={mcLoading}
+          monteCarloResult={monteCarloResult}
+          onRunMonteCarlo={handleRunMonteCarlo}
+          selectedDriverId={selectedDriverId}
+        />
       )}
 
-      {/* ==================================================================== */}
-      {/* SECTION 5: DRIVER HEAD-TO-HEAD COMPARISON */}
-      {/* ==================================================================== */}
       {activeTab === 'comparison' && comparisonData && (
-        <div className="space-y-6">
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                <Target className="w-4 h-4 text-[#10b981]" />
-                <span>Championship Head-to-Head &amp; Point Swing Analysis</span>
-              </h3>
-              <p className="text-xs text-[#94a3b8]">
-                Compare {comparisonData.driver_a.name} against any rival in the 2026 title fight
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-xs text-[#64748b] font-semibold">SELECT RIVAL:</label>
-              <select
-                value={comparisonRivalId}
-                onChange={(e) => handleRivalChange(e.target.value)}
-                className="bg-[#151922] border border-[#2d3748] rounded px-3 py-1.5 text-xs font-bold text-white outline-none cursor-pointer hover:border-[#10b981] transition"
-              >
-                {trackerData?.standings
-                  .filter((d) => d.driver_id !== selectedDriverId)
-                  .map((d) => (
-                    <option key={d.driver_id} value={d.driver_id}>
-                      P{d.position} - {d.name} ({d.team})
-                    </option>
-                  ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Driver A Card */}
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-5 space-y-3">
-              <div className="text-[10px] font-bold text-[#38bdf8] uppercase">Driver A</div>
-              <h3 className="text-xl font-black text-white">{comparisonData.driver_a.name}</h3>
-              <div className="text-xs text-[#94a3b8]">{comparisonData.driver_a.team}</div>
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-2 border-t border-[#1f2530]">
-                <div>Points: <strong className="text-white">{comparisonData.driver_a.points}</strong></div>
-                <div>Position: <strong className="text-white">P{comparisonData.driver_a.position}</strong></div>
-                <div>Race Wins: <strong className="text-white">{comparisonData.driver_a.wins}</strong></div>
-                <div>Podiums: <strong className="text-white">{comparisonData.driver_a.podiums}</strong></div>
-              </div>
-            </div>
-
-            {/* Driver B Card */}
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-5 space-y-3">
-              <div className="text-[10px] font-bold text-[#f59e0b] uppercase">Driver B (Rival)</div>
-              <h3 className="text-xl font-black text-white">{comparisonData.driver_b.name}</h3>
-              <div className="text-xs text-[#94a3b8]">{comparisonData.driver_b.team}</div>
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-2 border-t border-[#1f2530]">
-                <div>Points: <strong className="text-white">{comparisonData.driver_b.points}</strong></div>
-                <div>Position: <strong className="text-white">P{comparisonData.driver_b.position}</strong></div>
-                <div>Race Wins: <strong className="text-white">{comparisonData.driver_b.wins}</strong></div>
-                <div>Podiums: <strong className="text-white">{comparisonData.driver_b.podiums}</strong></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tactical Swing Analysis Box */}
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-5 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Required Points Trajectory</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-              <div className="p-3 bg-[#0d1016] border border-[#1f2530] rounded">
-                <div className="text-[#64748b]">Net Points Gap</div>
-                <div className="text-xl font-black text-[#f59e0b] mt-1">{comparisonData.points_difference} pts</div>
-              </div>
-              <div className="p-3 bg-[#0d1016] border border-[#1f2530] rounded">
-                <div className="text-[#64748b]">Required Swing / Race</div>
-                <div className="text-xl font-black text-[#38bdf8] mt-1">{comparisonData.required_point_swing_per_round} pts</div>
-              </div>
-              <div className="p-3 bg-[#0d1016] border border-[#1f2530] rounded">
-                <div className="text-[#64748b]">Races Needed (at P1 vs P3)</div>
-                <div className="text-xl font-black text-[#10b981] mt-1">{comparisonData.races_needed_at_10pt_swing} races</div>
-              </div>
-            </div>
-            <p className="text-xs text-[#cbd5e1] leading-relaxed pt-2">
-              {comparisonData.tactical_analysis}
-            </p>
-          </div>
-        </div>
+        <DriverComparisonCard
+          comparisonData={comparisonData}
+          comparisonRivalId={comparisonRivalId}
+          onRivalChange={handleRivalChange}
+          trackerData={trackerData}
+          selectedDriverId={selectedDriverId}
+        />
       )}
 
-      {/* ==================================================================== */}
-      {/* SECTION 6: CHAMPIONSHIP HISTORY (2010 TILL NOW) */}
-      {/* ==================================================================== */}
       {activeTab === 'history' && (
-        <div className="space-y-6">
-          {/* Header Bar */}
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="px-2 py-0.5 text-[10px] font-bold bg-[#38bdf8]/20 text-[#38bdf8] rounded border border-[#38bdf8]/40 uppercase tracking-wider">
-                  HISTORICAL ARCHIVES (2010–2026)
-                </span>
-                <span className="text-xs text-[#94a3b8] font-mono">17 SEASONS DOCUMENTED</span>
-              </div>
-              <h3 className="text-lg font-black text-white flex items-center space-x-2 mt-1">
-                <Calendar className="w-5 h-5 text-[#f59e0b]" />
-                <span>Formula 1 World Championship Statistics: 2010 to Present</span>
-              </h3>
-              <p className="text-xs text-[#94a3b8]">
-                Verified official title winners, margin of victory, regulation eras, and Max Verstappen championship records
-              </p>
-            </div>
-            <div className="text-xs font-mono text-[#10b981] bg-[#10b981]/10 px-3 py-1.5 rounded border border-[#10b981]/30">
-              OFFICIAL FIA / ERGAST JOLPICA RECONCILED
-            </div>
-          </div>
-
-          {/* Historical Era KPI Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-3.5">
-              <div className="text-[10px] font-bold text-[#64748b] uppercase">Max Verstappen Titles</div>
-              <div className="text-2xl font-black font-mono text-[#f59e0b] mt-0.5">5 Titles</div>
-              <div className="text-[10px] text-[#94a3b8] font-mono">2021, 2022, 2023, 2024, 2025</div>
-            </div>
-
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-3.5">
-              <div className="text-[10px] font-bold text-[#64748b] uppercase">Red Bull Racing Era</div>
-              <div className="text-2xl font-black font-mono text-[#38bdf8] mt-0.5">9 Titles</div>
-              <div className="text-[10px] text-[#94a3b8] font-mono">Vettel (4) &amp; Verstappen (5)</div>
-            </div>
-
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-3.5">
-              <div className="text-[10px] font-bold text-[#64748b] uppercase">Mercedes Dominance</div>
-              <div className="text-2xl font-black font-mono text-[#10b981] mt-0.5">7 Titles</div>
-              <div className="text-[10px] text-[#94a3b8] font-mono">Hamilton (6) &amp; Rosberg (1)</div>
-            </div>
-
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-3.5">
-              <div className="text-[10px] font-bold text-[#64748b] uppercase">Closest Championship</div>
-              <div className="text-2xl font-black font-mono text-[#ef4444] mt-0.5">3.0 PTS</div>
-              <div className="text-[10px] text-[#94a3b8] font-mono">2012 (Vettel vs Alonso)</div>
-            </div>
-          </div>
-
-          {/* Season Selector Bar (2026 down to 2010) */}
-          <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4">
-            <div className="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center justify-between">
-              <span>SELECT SEASON ARCHIVE (2010–2026):</span>
-              <span className="text-[11px] text-[#38bdf8] font-mono">ACTIVE SELECTION: {historicalSeason} SEASON</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5 text-xs font-mono">
-              {[2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setHistoricalSeason(s)}
-                  className={`px-3 py-1.5 rounded font-bold transition cursor-pointer ${
-                    historicalSeason === s
-                      ? 'bg-[#e10600] text-white shadow-md'
-                      : s === 2026
-                      ? 'bg-[#152e24] text-[#10b981] border border-[#10b981]/40 hover:bg-[#10b981]/30'
-                      : 'bg-[#151922] text-[#94a3b8] hover:text-white hover:bg-[#1e2533]'
-                  }`}
-                >
-                  {s} {s === 2026 ? '(Active)' : ''}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Selected Season Detail Card & Full Standings */}
-          {historicalData && (
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg overflow-x-auto shadow-sm">
-              <div className="p-4 border-b border-[#1f2530] flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="px-2 py-0.5 text-[10px] font-bold bg-[#1a202c] text-[#94a3b8] rounded border border-[#2d3748]">
-                      {historicalData.status === 'COMPLETED' ? 'OFFICIAL SEASON CONCLUSION' : 'ACTIVE CHAMPIONSHIP'}
-                    </span>
-                    {historicalData.metadata?.era && (
-                      <span className="text-xs text-[#38bdf8] font-mono">{historicalData.metadata.era}</span>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-black text-white mt-1">
-                    {historicalData.season} Formula 1 Drivers' World Championship
-                  </h3>
-                  <p className="text-xs text-[#94a3b8]">
-                    {historicalData.metadata?.deciding_round ? `Title Decided: ${historicalData.metadata.deciding_round}` : 'Season in progress'}
-                  </p>
-                </div>
-
-                {historicalData.champion && (
-                  <div className="bg-[#10141d] border border-[#2d3748] rounded-lg p-3 text-right">
-                    <div className="text-[10px] font-bold text-[#f59e0b] uppercase">
-                      {historicalData.season === 2026 ? 'CURRENT LEADER' : 'WORLD CHAMPION'}
-                    </div>
-                    <div className="text-base font-black text-white">{historicalData.champion.name}</div>
-                    <div className="text-xs font-mono text-[#94a3b8]">
-                      {historicalData.champion.team} | <strong className="text-white">{historicalData.champion.points} PTS</strong> ({historicalData.champion.wins} Wins)
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Standings Table */}
-              <table className="w-full text-left text-xs table-f1">
-                <thead>
-                  <tr>
-                    <th>POS</th>
-                    <th>DRIVER</th>
-                    <th>NATIONALITY</th>
-                    <th>TEAM</th>
-                    <th className="text-right">POINTS</th>
-                    <th className="text-center">WINS</th>
-                    <th className="text-right">GAP TO LEAD</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historicalData.standings.map((h: any, idx: number) => {
-                    const isVer = h.driver_id === 'max_verstappen' || h.name.toLowerCase().includes('verstappen');
-                    const leadPts = historicalData.standings[0]?.points || 0;
-                    const gap = roundNumber(leadPts - h.points);
-                    return (
-                      <tr key={h.driver_id || idx} className={isVer ? 'bg-[#1e293b]/80 font-bold border-l-4 border-l-[#f59e0b]' : 'hover:bg-[#151922]'}>
-                        <td className="font-mono font-bold text-white">
-                          {h.position === 1 ? '🥇 1' : h.position === 2 ? '🥈 2' : h.position === 3 ? '🥉 3' : `P${h.position}`}
-                        </td>
-                        <td className="text-white font-semibold">
-                          <div className="flex items-center space-x-1.5">
-                            <span>{h.name}</span>
-                            {isVer && (
-                              <span className="px-1.5 py-0.2 text-[9px] font-bold bg-[#f59e0b]/20 text-[#f59e0b] rounded">
-                                VER 33
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="text-[#94a3b8]">{h.nationality || 'F1 International'}</td>
-                        <td className="text-[#94a3b8]">{h.team}</td>
-                        <td className="text-right font-mono font-bold text-white">{h.points}</td>
-                        <td className="text-center font-mono text-white">{h.wins}</td>
-                        <td className="text-right font-mono text-[#f59e0b]">
-                          {gap === 0 ? '-' : `-${gap}`}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Roll of Honor Table: All Champions 2010 to 2026 */}
-          {championsList.length > 0 && (
-            <div className="bg-[#12151b] border border-[#1f2530] rounded-lg overflow-x-auto shadow-sm">
-              <div className="p-4 border-b border-[#1f2530]">
-                <h3 className="text-sm font-bold text-white">FIA Formula 1 World Champions Roll of Honor (2010–2026)</h3>
-                <p className="text-[11px] text-[#64748b]">Complete historical chronicle of title winners, winning margins, and Verstappen milestones</p>
-              </div>
-
-              <table className="w-full text-left text-xs table-f1">
-                <thead>
-                  <tr>
-                    <th>YEAR</th>
-                    <th>WORLD CHAMPION</th>
-                    <th>CONSTRUCTOR</th>
-                    <th className="text-right">POINTS</th>
-                    <th className="text-center">WINS</th>
-                    <th>RUNNER-UP</th>
-                    <th className="text-right">MARGIN</th>
-                    <th>REGULATION ERA</th>
-                    <th>MAX VERSTAPPEN FINISH</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {championsList.map((c: any) => {
-                    const isSelected = c.year === historicalSeason;
-                    const isVerstappenChamp = c.champion_code === 'VER';
-                    return (
-                      <tr
-                        key={c.year}
-                        onClick={() => setHistoricalSeason(c.year)}
-                        className={`cursor-pointer transition ${
-                          isSelected
-                            ? 'bg-[#1e293b]/90 border-l-4 border-l-[#e10600]'
-                            : isVerstappenChamp
-                            ? 'bg-[#151c27] hover:bg-[#1c2433]'
-                            : 'hover:bg-[#151922]'
-                        }`}
-                      >
-                        <td className="font-mono font-black text-white">{c.year}</td>
-                        <td className="font-bold text-white">
-                          <div className="flex items-center space-x-1.5">
-                            <span>{c.champion_driver}</span>
-                            {isVerstappenChamp && (
-                              <span className="text-[#f59e0b]">👑</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="text-[#94a3b8]">{c.champion_team}</td>
-                        <td className="text-right font-mono font-bold text-white">{c.champion_points}</td>
-                        <td className="text-center font-mono text-white">{c.champion_wins}</td>
-                        <td className="text-[#94a3b8]">
-                          {c.runner_up_driver} <span className="text-[10px] text-[#64748b]">({c.runner_up_team.split(' ')[0]})</span>
-                        </td>
-                        <td className="text-right font-mono text-[#10b981]">
-                          +{c.points_margin} pts
-                        </td>
-                        <td className="text-[11px] text-[#64748b]">{c.era}</td>
-                        <td className="text-[11px] font-mono">
-                          <span className={c.verstappen_finish.includes('WORLD CHAMPION') ? 'text-[#f59e0b] font-bold' : 'text-[#94a3b8]'}>
-                            {c.verstappen_finish}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <HistoricalChampionsView
+          historicalSeason={historicalSeason}
+          setHistoricalSeason={setHistoricalSeason}
+          historicalData={historicalData}
+          championsList={championsList}
+        />
       )}
     </div>
   );

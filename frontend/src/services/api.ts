@@ -17,7 +17,7 @@ import {
   FALLBACK_HISTORICAL_CHAMPIONS
 } from './fallbackData';
 
-export const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api/v1';
+export const API_BASE = (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || '/api/v1';
 
 export type DataSourceMode = 'live' | 'fallback';
 
@@ -65,43 +65,43 @@ async function safeFetch<T>(url: string, fallback: T): Promise<T> {
 }
 
 export async function fetchOverview(season: number = 2026): Promise<OverviewData> {
-  return safeFetch<OverviewData>(`${API_BASE}/overview?season=${season}`, FALLBACK_OVERVIEW as any);
+  return safeFetch<OverviewData>(`${API_BASE}/overview?season=${season}`, FALLBACK_OVERVIEW as unknown as OverviewData);
 }
 
 export async function fetchDriverStandings(season: number = 2026): Promise<DriverStandingItem[]> {
-  return safeFetch<DriverStandingItem[]>(`${API_BASE}/seasons/${season}/standings/drivers`, FALLBACK_DRIVER_STANDINGS as any);
+  return safeFetch<DriverStandingItem[]>(`${API_BASE}/seasons/${season}/standings/drivers`, FALLBACK_DRIVER_STANDINGS as unknown as DriverStandingItem[]);
 }
 
 export async function fetchConstructorStandings(season: number = 2026): Promise<ConstructorStandingItem[]> {
-  return safeFetch<ConstructorStandingItem[]>(`${API_BASE}/seasons/${season}/standings/constructors`, FALLBACK_CONSTRUCTOR_STANDINGS as any);
+  return safeFetch<ConstructorStandingItem[]>(`${API_BASE}/seasons/${season}/standings/constructors`, FALLBACK_CONSTRUCTOR_STANDINGS as unknown as ConstructorStandingItem[]);
 }
 
 export async function fetchRaces(season: number = 2026): Promise<RaceItem[]> {
-  return safeFetch<RaceItem[]>(`${API_BASE}/races?season=${season}`, [] as any);
+  return safeFetch<RaceItem[]>(`${API_BASE}/races?season=${season}`, []);
 }
 
-export async function fetchRaceDetails(raceId: string): Promise<any> {
+export async function fetchRaceDetails(raceId: string): Promise<unknown> {
   return safeFetch(`${API_BASE}/races/${raceId}`, null);
 }
 
-export async function fetchRaceResults(raceId: string): Promise<any> {
+export async function fetchRaceResults(raceId: string): Promise<unknown> {
   return safeFetch(`${API_BASE}/races/${raceId}/results`, null);
 }
 
 export async function fetchCircuits(): Promise<CircuitItem[]> {
-  return safeFetch<CircuitItem[]>(`${API_BASE}/circuits`, [] as any);
+  return safeFetch<CircuitItem[]>(`${API_BASE}/circuits`, []);
 }
 
-export async function fetchDrivers(): Promise<any[]> {
-  return safeFetch<any[]>(`${API_BASE}/drivers`, [] as any);
+export async function fetchDrivers(): Promise<unknown[]> {
+  return safeFetch<unknown[]>(`${API_BASE}/drivers`, []);
 }
 
-export async function fetchDriverProfile(driverId: string): Promise<any> {
+export async function fetchDriverProfile(driverId: string): Promise<unknown> {
   return safeFetch(`${API_BASE}/drivers/${driverId}`, null);
 }
 
-export async function fetchConstructors(): Promise<any[]> {
-  return safeFetch<any[]>(`${API_BASE}/constructors`, [] as any);
+export async function fetchConstructors(): Promise<unknown[]> {
+  return safeFetch<unknown[]>(`${API_BASE}/constructors`, []);
 }
 
 export async function fetchTelemetry(raceId: string, driverA: string, driverB: string): Promise<TelemetryData> {
@@ -125,7 +125,7 @@ export async function fetchTelemetry(raceId: string, driverA: string, driverB: s
       drs_b: i > 25 && i < 35,
       delta_time_sec: Math.sin(i * 0.2) * 0.15
     }))
-  } as any);
+  } as unknown as TelemetryData);
 }
 
 export async function fetchStrategy(gapSec: number = 2.1, leadComp: string = "MEDIUM", chaseComp: string = "HARD"): Promise<any> {
@@ -167,14 +167,14 @@ export async function fetchSystemMetrics(): Promise<SystemMetrics> {
     database_latency_ms: 1.4,
     active_connections: 8,
     memory_mb: 284.5
-  } as any);
+  } as unknown as SystemMetrics);
 }
 
 export async function fetchDrills(): Promise<IncidentDrillItem[]> {
   return safeFetch<IncidentDrillItem[]>(`${API_BASE}/operations/drills`, [
     { key: "telemetry_drop", title: "Telemetry Ingest Dropout", status: "READY", severity: "HIGH", description: "Simulates sudden loss of pit wall UDP timing stream." },
     { key: "db_failover", title: "Database Failover Drill", status: "READY", severity: "CRITICAL", description: "Tests hot SQLite/PostgreSQL failover to standby replica." }
-  ] as any);
+  ] as unknown as IncidentDrillItem[]);
 }
 
 export async function triggerDrill(key: string): Promise<any> {

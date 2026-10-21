@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDrivers, fetchDriverProfile } from '../services/api';
-import { Users, Trophy, Award, Search, X, ChevronRight, Activity } from 'lucide-react';
+import { Users, Search, X } from 'lucide-react';
 
 export const DriversView: React.FC = () => {
   const [drivers, setDrivers] = useState<any[]>([]);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { OverviewData } from '../types';
-import { Flag, Clock, Trophy, Shield, ChevronRight, Activity, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { Flag, Trophy, Shield, ChevronRight, AlertCircle, ArrowUpRight } from 'lucide-react';
 
 interface OverviewViewProps {
   data: OverviewData | null;

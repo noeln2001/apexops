@@ -4,9 +4,9 @@ import { Save, ShieldCheck, RefreshCw, CheckCircle2, AlertTriangle, Play, Databa
 import { useAuth } from '../context/AuthContext';
 
 export const BackupsView: React.FC = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [backups, setBackups] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [restoreResult, setRestoreResult] = useState<any>(null);
 

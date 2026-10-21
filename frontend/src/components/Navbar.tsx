@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, RefreshCw, UserCheck, LogIn, Lock } from 'lucide-react';
+import { Clock, RefreshCw, UserCheck, Lock } from 'lucide-react';
 import { F1Logo } from './F1Logo';
 import { useAuth } from '../context/AuthContext';
 import { currentDataSourceMode, onDataSourceChange, DataSourceMode } from '../services/api';

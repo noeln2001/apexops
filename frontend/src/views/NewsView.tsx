@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchNews } from '../services/api';
-import { Newspaper, ExternalLink, ShieldCheck, Tag, RefreshCw, AlertCircle } from 'lucide-react';
+import { Newspaper, ExternalLink, Tag } from 'lucide-react';
 
 export const NewsView: React.FC = () => {
   const [articles, setArticles] = useState<any[]>([]);

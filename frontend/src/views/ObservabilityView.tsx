@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchSystemMetrics } from '../services/api';
 import { SystemMetrics } from '../types';
-import { Sliders, Activity, Database, HardDrive, Cpu, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sliders, Database, HardDrive, Cpu, RefreshCw } from 'lucide-react';
 
 export const ObservabilityView: React.FC = () => {
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);

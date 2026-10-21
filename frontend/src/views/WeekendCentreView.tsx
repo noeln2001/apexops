@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchRaceDetails, fetchRaceResults, fetchRaces } from '../services/api';
-import { Flag, Clock, Calendar, Shield, MapPin, ChevronRight, AlertCircle, Award } from 'lucide-react';
+import { Flag, Clock, Calendar, MapPin, Award } from 'lucide-react';
 
 interface WeekendCentreViewProps {
   season: number;

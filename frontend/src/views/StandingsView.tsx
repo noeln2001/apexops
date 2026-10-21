@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DriverStandingItem, ConstructorStandingItem } from '../types';
 import { fetchDriverStandings, fetchConstructorStandings } from '../services/api';
-import { Trophy, Download, Search, Shield, ArrowUpDown } from 'lucide-react';
+import { Trophy, Download, Search } from 'lucide-react';
 
 interface StandingsViewProps {
   season: number;

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { fetchStrategy } from '../services/api';
-import { Layers, Timer, Zap, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Layers, Timer, Zap } from 'lucide-react';
 
 export const StrategyView: React.FC = () => {
   const [gapSec, setGapSec] = useState<number>(1.8);
   const [leadComp, setLeadComp] = useState<string>('MEDIUM');
-  const [chaseComp, setChaseComp] = useState<string>('HARD');
+  const [chaseComp] = useState<string>('HARD');
   const [strategyData, setStrategyData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);

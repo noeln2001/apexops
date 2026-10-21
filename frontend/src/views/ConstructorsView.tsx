@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchConstructors } from '../services/api';
-import { Shield, Trophy, Users, Wrench } from 'lucide-react';
+import { Shield, Users, Wrench } from 'lucide-react';
 
 export const ConstructorsView: React.FC = () => {
   const [constructors, setConstructors] = useState<any[]>([]);

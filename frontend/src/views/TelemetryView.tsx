@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { fetchTelemetry, fetchDrivers, fetchRaces } from '../services/api';
+import { fetchTelemetry } from '../services/api';
 import { TelemetryData } from '../types';
-import { Activity, Gauge, Cpu, Sliders, ArrowUpDown, Info } from 'lucide-react';
+import { Activity, Gauge, ArrowUpDown } from 'lucide-react';
 
 interface TelemetryViewProps {
-  season: number;
+  season?: number;
 }
 
-export const TelemetryView: React.FC<TelemetryViewProps> = ({ season }) => {
+export const TelemetryView: React.FC<TelemetryViewProps> = ({ season: _season }) => {
   const [driverA, setDriverA] = useState('norris');
   const [driverB, setDriverB] = useState('verstappen');
-  const [raceId, setRaceId] = useState('2026-17');
+  const [raceId] = useState('2026-17');
   const [data, setData] = useState<TelemetryData | null>(null);
   const [loading, setLoading] = useState(true);
 

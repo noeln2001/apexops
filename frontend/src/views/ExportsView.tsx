@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, Download, FileText, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Database, Download, FileText } from 'lucide-react';
 
 interface ExportsViewProps {
   season: number;

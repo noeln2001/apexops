@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchRaces } from '../services/api';
 import { RaceItem } from '../types';
-import { Calendar, Flag, Clock, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Flag } from 'lucide-react';
 
 interface CalendarViewProps {
   season: number;

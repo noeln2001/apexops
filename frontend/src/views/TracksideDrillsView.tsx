@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDrills, triggerDrill, remediateDrill } from '../services/api';
 import { IncidentDrillItem } from '../types';
-import { Terminal, AlertTriangle, ShieldCheck, Play, CheckCircle2, RotateCcw, Wrench, Lock } from 'lucide-react';
+import { Terminal, Play, Wrench, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const TracksideDrillsView: React.FC = () => {
   const { isAdmin } = useAuth();
   const [drills, setDrills] = useState<IncidentDrillItem[]>([]);
   const [activeDrill, setActiveDrill] = useState<IncidentDrillItem | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   const loadDrills = () => {

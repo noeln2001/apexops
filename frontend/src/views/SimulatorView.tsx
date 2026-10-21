@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchChampionshipSimulation, runCustomSimulation } from '../services/api';
-import { Cpu, Trophy, RefreshCw, AlertCircle, Play, Percent, Sliders } from 'lucide-react';
+import { Cpu, RefreshCw, Play, Sliders } from 'lucide-react';
 
 interface SimulatorViewProps {
   season: number;
@@ -8,14 +8,14 @@ interface SimulatorViewProps {
 
 export const SimulatorView: React.FC<SimulatorViewProps> = ({ season }) => {
   const [data, setData] = useState<any>(null);
-  const [iterations, setIterations] = useState<number>(1000);
+  const [iterations] = useState<number>(1000);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Custom user deterministic pick for Austin GP
   const [austinWinner, setAustinWinner] = useState<string>('norris');
   const [mexicoWinner, setMexicoWinner] = useState<string>('verstappen');
 
-  const runSimulation = (iters = iterations) => {
+  const runSimulation = (_iters = iterations) => {
     setLoading(true);
     fetchChampionshipSimulation(season)
       .then((res) => {
