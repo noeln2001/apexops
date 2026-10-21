@@ -5,7 +5,7 @@ FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY frontend/ ./
 RUN npm run build
@@ -38,6 +38,12 @@ COPY operations/ ./operations/
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 RUN mkdir -p /app/data /app/backups /app/cache
+
+# Create and switch to non-root user
+RUN groupadd -r apexops && useradd -r -g apexops -d /app apexops && \
+    chown -R apexops:apexops /app
+
+USER apexops
 
 EXPOSE 8000
 
