@@ -53,8 +53,16 @@ def test_empty_or_corrupt_rejected():
     assert res["is_valid"] is False
     assert res["classification"] == "REJECTED"
 
-def test_ssrf_safety_protection():
-    """Verify that SSRF URLs to private networks or localhost are blocked."""
+def test_ssrf_safety_protection(monkeypatch):
+    """Verify that SSRF URLs to private networks or localhost are blocked deterministically offline."""
+    import socket
+    orig_getaddrinfo = socket.getaddrinfo
+    def mock_getaddrinfo(host, port, *args, **kwargs):
+        if host == "commons.wikimedia.org":
+            return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("208.80.154.224", 443))]
+        return orig_getaddrinfo(host, port, *args, **kwargs)
+    monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
+
     is_safe, reason = is_safe_url("http://127.0.0.1:8000/internal")
     assert is_safe is False
     assert "localhost" in reason or "private" in reason or "internal" in reason
@@ -67,11 +75,8 @@ def test_ssrf_safety_protection():
     assert "Unsupported scheme" in reason
 
     is_safe, reason = is_safe_url("https://commons.wikimedia.org/wiki/File:Test.jpg")
-    # In offline environments, DNS might fail if not mocked, but format is valid
-    if not is_safe and "Could not resolve" in reason:
-        pass
-    else:
-        assert is_safe is True
+    assert is_safe is True
+
 
 def test_ssrf_hardened_edge_cases():
     """Verify that decimal, hex, IPv4-mapped, CGNAT, and metadata IPs are all blocked."""

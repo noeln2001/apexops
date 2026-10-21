@@ -1,0 +1,13 @@
+[tool.pytest.ini_options]
+addopts = "-m 'not live'"
+markers = [
+    "live: tests that require live external network connectivity (run with -m live)"
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

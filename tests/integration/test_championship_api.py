@@ -56,14 +56,24 @@ def test_driver_comparison_endpoint():
     assert data["points_difference"] == 119.0
     assert data["remaining_rounds"] == 6
 
-def test_championship_history_endpoint():
+def test_championship_history_endpoint(monkeypatch):
+    from data_engine.historical.historical_service import HistoricalStatsService
+    # Mock deterministic standings so test passes fully offline without network access
+    mock_standings = [
+        {"position": 1, "driver_id": "max_verstappen", "name": "Max Verstappen", "code": "VER", "team": "Red Bull Racing", "points": 429.0, "wins": 9},
+        {"position": 2, "driver_id": "norris", "name": "Lando Norris", "code": "NOR", "team": "McLaren", "points": 349.0, "wins": 3}
+    ]
+    monkeypatch.setattr(HistoricalStatsService, "get_season_standings", classmethod(lambda cls, yr: mock_standings if yr == 2024 else []))
+
     response = client.get("/api/v1/championship/history/2024")
     assert response.status_code == 200
     data = response.json()
     assert data["season"] == 2024
     assert data["status"] == "COMPLETED"
     assert data["champion"]["name"] == "Max Verstappen"
-    assert "standings_complete" in data
+    assert data["standings_complete"] is True
+    assert len(data["standings"]) == 2
+
 
 def test_championship_history_no_fake_data_fallback(monkeypatch):
     from data_engine.historical.historical_service import HistoricalStatsService
