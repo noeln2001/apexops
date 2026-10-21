@@ -1,20 +1,18 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16-alpine
     container_name: apexops-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: apexops
-      POSTGRES_USER: apexops_admin
-      POSTGRES_PASSWORD: apexops_secure_password_replace_in_prod
+      POSTGRES_DB: ${POSTGRES_DB:-apexops}
+      POSTGRES_USER: ${POSTGRES_USER:-apexops_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U apexops_admin -d apexops"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-apexops_admin} -d ${POSTGRES_DB:-apexops}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,10 +27,13 @@ services:
       db:
         condition: service_healthy
     environment:
-      ENVIRONMENT: production
-      REFERENCE_DATE: "2026-10-20"
-      DATABASE_URL: postgresql://apexops_admin:apexops_secure_password_replace_in_prod@db:5432/apexops
-      SECRET_KEY: apexops-prod-secret-key-32chars-min-change-me
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      REFERENCE_DATE: ${REFERENCE_DATE:-}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-apexops_admin}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-apexops}}
+      SECRET_KEY: ${SECRET_KEY}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@apexops.internal}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,https://noeln2001.github.io}
     ports:
       - "8000:8000"
     volumes:

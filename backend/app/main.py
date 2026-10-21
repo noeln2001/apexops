@@ -38,6 +38,13 @@ if operational_log_handler not in apexops_logger.handlers:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # In ENVIRONMENT=production, refuse to start if SECRET_KEY is the default
+    default_secret = "apexops-super-secure-production-ready-jwt-key-32chars"
+    if settings.ENVIRONMENT.lower() == "production" and (
+        not settings.SECRET_KEY or settings.SECRET_KEY == default_secret or "change-me" in settings.SECRET_KEY.lower()
+    ):
+        raise RuntimeError("CRITICAL: Refusing to start in production with default or insecure SECRET_KEY!")
+
     logger.info("Starting ApexOps Engine...")
     if operational_log_handler not in root_logger.handlers:
         root_logger.addHandler(operational_log_handler)
