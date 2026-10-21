@@ -5,10 +5,12 @@ import zipfile
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from backend.app.core.security import require_admin
+from backend.app.models.operations import User
 from data_engine.media.image_discovery import SOURCE_COMPLIANCE_CATALOG, ImageDiscoveryService
 from data_engine.media.url_safety import is_safe_url
 
@@ -271,7 +273,7 @@ def download_manifest():
     )
 
 @router.post("/export-zip")
-def export_images_zip(payload: ExportZipRequest):
+def export_images_zip(payload: ExportZipRequest, admin: User = Depends(require_admin)):
     """
     Packs selected verified images into a ZIP archive organized by:
     /{Team}/{Driver}/{Title}.{ext}

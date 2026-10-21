@@ -3,6 +3,7 @@ import zipfile
 
 from fastapi.testclient import TestClient
 
+from backend.app.core.config import settings
 from backend.app.main import app
 
 client = TestClient(app)
@@ -45,14 +46,28 @@ def test_gallery_manifest_download():
     assert manifest["platform"] == "ApexOps Motorsport Technology & Intelligence Platform"
     assert "images" in manifest
 
+
+
 def test_gallery_export_zip():
-    """Verify that exporting selected images generates a valid zip file."""
+    """Verify that exporting selected images requires admin and generates a valid zip file."""
+    # Unauthenticated should fail with 401
+    unauth_res = client.post("/api/v1/gallery/export-zip", json={"image_ids": ["c2026chinese_max_fp1"]})
+    assert unauth_res.status_code == 401
+
+    # Authenticate as admin
+    login_res = client.post("/api/v1/auth/login", json={
+        "email": settings.ADMIN_EMAIL,
+        "password": settings.ADMIN_PASSWORD
+    })
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
     # List images first to get an ID
     list_res = client.get("/api/v1/gallery/images")
     images = list_res.json()["images"]
     if images:
         target_id = images[0]["id"]
-        zip_res = client.post("/api/v1/gallery/export-zip", json={"image_ids": [target_id]})
+        zip_res = client.post("/api/v1/gallery/export-zip", json={"image_ids": [target_id]}, headers=headers)
         assert zip_res.status_code == 200
         assert zip_res.headers["content-type"] == "application/zip"
         # Verify valid zip format

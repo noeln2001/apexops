@@ -57,30 +57,44 @@ def test_telemetry_endpoint():
     assert "telemetry" in data
     assert "speed_delta" in data["telemetry"]
 
+def get_admin_headers():
+    login_res = client.post("/api/v1/auth/login", json={
+        "email": settings.ADMIN_EMAIL,
+        "password": settings.ADMIN_PASSWORD
+    })
+    token = login_res.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+def test_unauthenticated_post_backups():
+    res = client.post("/api/v1/operations/backups")
+    assert res.status_code == 401
+
 def test_operations_drills_and_trigger():
     res = client.get("/api/v1/operations/drills")
     assert res.status_code == 200
     drills = res.json()
     assert len(drills) == 8
 
+    headers = get_admin_headers()
     # Trigger drill
-    t_res = client.post("/api/v1/operations/drills/DRILL-01/trigger")
+    t_res = client.post("/api/v1/operations/drills/DRILL-01/trigger", headers=headers)
     assert t_res.status_code == 200
     assert t_res.json()["status"] == "ACTIVE"
 
     # Remediate drill
-    r_res = client.post("/api/v1/operations/drills/DRILL-01/remediate")
+    r_res = client.post("/api/v1/operations/drills/DRILL-01/remediate", headers=headers)
     assert r_res.status_code == 200
     assert r_res.json()["status"] == "RESOLVED"
 
 def test_isolated_restore_guarantee():
+    headers = get_admin_headers()
     # Make a backup
-    b_res = client.post("/api/v1/operations/backups")
+    b_res = client.post("/api/v1/operations/backups", headers=headers)
     assert b_res.status_code == 200
     fname = b_res.json()["filename"]
 
     # Test isolated restore
-    res = client.post(f"/api/v1/operations/backups/{fname}/test-restore")
+    res = client.post(f"/api/v1/operations/backups/{fname}/test-restore", headers=headers)
     assert res.status_code == 200
     data = res.json()
     assert data["status"] == "SUCCESS"
@@ -153,10 +167,11 @@ def test_backup_path_traversal_protection():
         assert res_bad["status"] == "FAILED"
 
     # API endpoint test rejects path traversal attempt
-    api_res = client.post("/api/v1/operations/backups/..%2Fdata%2Fapexops.db/test-restore")
+    headers = get_admin_headers()
+    api_res = client.post("/api/v1/operations/backups/..%2Fdata%2Fapexops.db/test-restore", headers=headers)
     assert api_res.status_code in [400, 404, 405]
 
-    bad_api_res = client.post("/api/v1/operations/backups/apexops_backup_invalid.db/test-restore")
+    bad_api_res = client.post("/api/v1/operations/backups/apexops_backup_invalid.db/test-restore", headers=headers)
     assert bad_api_res.status_code == 400
 
 

@@ -5,7 +5,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from backend.app.core.security import require_admin
 from backend.app.db.session import get_db
+from backend.app.models.operations import User
 from data_engine.etl.current_season_reconciler import CurrentSeasonReconciler
 from data_engine.etl.historical_importer import HistoricalImporter
 from operations.backups.backup_manager import BackupManager
@@ -90,7 +92,7 @@ def list_incident_drills(db: Session = Depends(get_db)):
     return DrillService.list_drills(db)
 
 @router.post("/operations/drills/{scenario_key}/trigger")
-def trigger_incident_drill(scenario_key: str, db: Session = Depends(get_db)):
+def trigger_incident_drill(scenario_key: str, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     """Injects a synthetic incident drill for trackside operator diagnosis."""
     res = DrillService.trigger_drill(db, scenario_key)
     if "error" in res:
@@ -98,7 +100,7 @@ def trigger_incident_drill(scenario_key: str, db: Session = Depends(get_db)):
     return res
 
 @router.post("/operations/drills/{scenario_key}/remediate")
-def remediate_incident_drill(scenario_key: str, db: Session = Depends(get_db)):
+def remediate_incident_drill(scenario_key: str, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     """Executes the operational remediation playbook to restore system to nominal health."""
     res = DrillService.remediate_drill(db, scenario_key)
     if "error" in res:
@@ -111,7 +113,7 @@ def list_backups():
     return BackupManager.list_backups()
 
 @router.post("/operations/backups")
-def create_backup(req: Optional[BackupRequest] = None):
+def create_backup(req: Optional[BackupRequest] = None, admin: User = Depends(require_admin)):
     """Triggers an online, non-blocking hot database backup with integrity verification."""
     note = req.note if req else "Manual snapshot via Operations Console"
     res = BackupManager.create_backup(note)
@@ -120,7 +122,7 @@ def create_backup(req: Optional[BackupRequest] = None):
     return res
 
 @router.post("/operations/backups/{filename}/test-restore")
-def test_isolated_restore(filename: str):
+def test_isolated_restore(filename: str, admin: User = Depends(require_admin)):
     """
     Executes a non-destructive isolated restore test in a sandboxed directory.
     Guaranteed never to touch or overwrite production data.
@@ -136,7 +138,7 @@ def test_isolated_restore(filename: str):
     return res
 
 @router.post("/admin/import")
-def run_import(req: ImportRequest, db: Session = Depends(get_db)):
+def run_import(req: ImportRequest, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     """Manually triggers the historical or current season data import pipeline."""
     importer = HistoricalImporter(db)
     importer.import_circuits()
@@ -144,7 +146,7 @@ def run_import(req: ImportRequest, db: Session = Depends(get_db)):
     return result
 
 @router.post("/admin/reconcile")
-def run_reconciliation(db: Session = Depends(get_db)):
+def run_reconciliation(db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     """Validates 2026 calendar and standings around 20 October 2026 reference date."""
     reconciler = CurrentSeasonReconciler(db)
     result = reconciler.reconcile_2026_season()

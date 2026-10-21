@@ -3,9 +3,22 @@ import threading
 import pytest
 from fastapi.testclient import TestClient
 
+from backend.app.core.config import settings
 from backend.app.main import app
 
 client = TestClient(app)
+
+def _get_auth_headers():
+    login_res = client.post("/api/v1/auth/login", json={
+        "email": settings.ADMIN_EMAIL,
+        "password": settings.ADMIN_PASSWORD
+    })
+    if login_res.status_code == 200:
+        token = login_res.json()["access_token"]
+        return {"Authorization": f"Bearer {token}"}
+    return {}
+
+_SMOKE_HEADERS = _get_auth_headers()
 
 def get_parameterless_get_routes():
     schema = app.openapi()
@@ -15,7 +28,7 @@ def get_parameterless_get_routes():
             # Check for path parameters
             if "{" in path:
                 continue
-            # Check for required query/header parameters (excluding auth headers if any)
+            # Check for required query/header parameters
             required_params = [
                 param for param in methods["get"].get("parameters", [])
                 if param.get("required") and param.get("in") != "header"
@@ -37,7 +50,7 @@ def test_smoke_parameterless_get_route(route: str):
 
     def _call():
         try:
-            res = client.get(route)
+            res = client.get(route, headers=_SMOKE_HEADERS)
             result_holder["response"] = res
         except Exception as e:
             exception_holder.append(e)

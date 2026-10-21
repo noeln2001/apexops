@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from backend.app.api.v1.endpoints import (
+    auth,
     championship,
     circuits,
     constructors,
@@ -18,6 +19,8 @@ from backend.app.api.v1.endpoints import (
 )
 
 api_router = APIRouter()
+
+api_router.include_router(auth.router)
 
 api_router.include_router(overview.router, tags=["Overview"])
 api_router.include_router(championship.router, tags=["Championship Tracker & Max Scenarios"])

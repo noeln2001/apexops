@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY", "apexops-super-secure-production-ready-jwt-key-32chars")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 24 hours
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "admin@apexops.internal")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "ApexOpsAdmin2026!")
+
+    # CORS
+    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:5173,https://noeln2001.github.io")
 
     # External APIs
     JOLPICA_BASE_URL: str = os.getenv("JOLPICA_BASE_URL", "https://api.jolpi.ca/ergast/f1")
