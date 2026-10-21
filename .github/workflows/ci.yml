@@ -26,20 +26,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Run Ruff Lint Check
+        run: |
+          pip install ruff
+          ruff check .
+
       - name: Run Schema Migration & Initial Seed
         run: |
-          python -m data_engine.etl.seed_initial_data
+          python scripts/seed_db.py
 
-      - name: Execute Pytest Suite (Unit & Integration)
+      - name: Execute Pytest Suite with Coverage and All-Routes Smoke Test
         run: |
-          python -m pytest tests/unit tests/integration -v
+          python -m pytest --cov=. --cov-report=term-missing tests/
 
       - name: Execute Performance Benchmark Baseline
         run: |
           python -m tests.performance.test_benchmarks
 
   frontend-build:
-    name: Frontend TypeScript & Vite Bundling
+    name: Frontend TypeScript, Lint & Vite Bundling
     runs-on: ubuntu-latest
 
     steps:
@@ -56,6 +61,10 @@ jobs:
       - name: Install Frontend Dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: Run Frontend Lint
+        working-directory: frontend
+        run: npm run lint
 
       - name: Build Production Bundle
         working-directory: frontend
