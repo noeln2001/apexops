@@ -110,8 +110,8 @@ def startup_event():
                     name=s["name"],
                     type=s["type"],
                     endpoint_url=s["url"],
-                    health_status="HEALTHY",
-                    last_ping_ms=45.0
+                    health_status="UNKNOWN",
+                    last_ping_ms=0.0
                 ))
         db.commit()
     except Exception as e:

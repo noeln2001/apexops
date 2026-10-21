@@ -113,7 +113,7 @@ class MetricsService:
         provider_stats = []
         for p in providers:
             # Map provider health
-            status_label = p.health_status or "HEALTHY"
+            status_label = p.health_status or "UNKNOWN"
             if p.consecutive_failures and p.consecutive_failures >= 3:
                 status_label = "UNAVAILABLE"
             elif p.consecutive_failures and p.consecutive_failures > 0:
