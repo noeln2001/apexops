@@ -76,7 +76,26 @@ async def lifespan(app: FastAPI):
         logger.warning(f"Error seeding data sources on startup: {e}")
     finally:
         db.close()
+
+    # Start APScheduler background ingestion worker
+    try:
+        from data_engine.etl.scheduled_ingestion import (
+            shutdown_scheduled_ingestion,
+            start_scheduled_ingestion,
+        )
+        start_scheduled_ingestion()
+    except Exception as e:
+        logger.warning(f"Could not start scheduled ingestion worker: {e}")
+
     yield
+
+    # Shutdown background worker on app exit
+    try:
+        from data_engine.etl.scheduled_ingestion import shutdown_scheduled_ingestion
+        shutdown_scheduled_ingestion()
+    except Exception:
+        pass
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

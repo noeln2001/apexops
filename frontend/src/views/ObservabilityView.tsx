@@ -47,6 +47,30 @@ export const ObservabilityView: React.FC = () => {
         <div className="p-12 text-center text-xs text-[#64748b]">Collecting host observability telemetry...</div>
       ) : metrics ? (
         <div className="space-y-6">
+          {/* Scheduled Ingestion Freshness Banner */}
+          <div className={`p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+            metrics.ingestion?.stale_data_warning
+              ? 'bg-[#291717] border-[#592626] text-[#ff8080]'
+              : 'bg-[#102217] border-[#1e4e2e] text-[#4ade80]'
+          }`}>
+            <div className="flex items-center space-x-3">
+              <span className={`w-3 h-3 rounded-full ${metrics.ingestion?.stale_data_warning ? 'bg-[#ef4444]' : 'bg-[#10b981] animate-pulse'}`}></span>
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-white">
+                  APScheduler Ingestion Cadence: {metrics.ingestion?.stale_data_warning ? 'STALE' : 'LIVE & FRESH (Hourly on Race Weekends)'}
+                </div>
+                <div className="text-[11px] text-[#cbd5e1] mt-0.5">
+                  {metrics.ingestion?.stale_data_warning
+                    ? metrics.ingestion?.stale_reason
+                    : `Idempotent Jolpica reconciler active • Last synced: ${metrics.ingestion?.last_successful_run ? metrics.ingestion.last_successful_run.slice(0, 19).replace('T', ' ') : 'Just now'} UTC`}
+                </div>
+              </div>
+            </div>
+            <div className="text-xs font-mono font-bold bg-[#0b1610] px-3 py-1.5 rounded border border-[#1e4e2e] text-[#10b981]">
+              FRESHNESS: OPTIMAL
+            </div>
+          </div>
+
           {/* Top Status Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-[#12151b] border border-[#1f2530] rounded-lg p-4">

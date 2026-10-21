@@ -176,6 +176,9 @@ export interface SystemMetrics {
     last_success_at: string;
   }>;
   ingestion: {
+    stale_data_warning?: boolean;
+    stale_reason?: string | null;
+    last_successful_run?: string | null;
     recent_runs: Array<{
       id: number;
       dataset: string;

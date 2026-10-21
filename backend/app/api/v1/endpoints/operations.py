@@ -151,3 +151,50 @@ def run_reconciliation(db: Session = Depends(get_db), admin: User = Depends(requ
     reconciler = CurrentSeasonReconciler(db)
     result = reconciler.reconcile_2026_season()
     return result
+
+
+@router.get("/operations/ingestion/runs")
+def list_ingestion_runs(
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    """Returns recent scheduled and on-demand ingestion run records with status and duration."""
+    from backend.app.models.operations import IngestionRun
+    runs = (
+        db.query(IngestionRun)
+        .order_by(IngestionRun.started_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return [
+        {
+            "id": r.id,
+            "source_name": r.source_name,
+            "dataset_name": r.dataset_name,
+            "status": r.status,
+            "records_processed": r.records_processed,
+            "duration_sec": r.duration_sec,
+            "started_at": r.started_at.isoformat() if r.started_at else None,
+            "completed_at": r.completed_at.isoformat() if r.completed_at else None,
+            "error_log": r.error_log,
+        }
+        for r in runs
+    ]
+
+
+@router.get("/operations/ingestion/status")
+def get_scheduled_ingestion_status(db: Session = Depends(get_db)):
+    """Returns APScheduler job state, cadence (hourly on race weekend, daily otherwise), and freshness."""
+    from data_engine.etl.scheduled_ingestion import get_ingestion_schedule_status
+    return get_ingestion_schedule_status(db)
+
+
+@router.post("/operations/ingestion/trigger")
+def trigger_scheduled_ingestion(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """Manually triggers the idempotent Jolpica season reconciliation job and writes an IngestionRun row."""
+    from data_engine.etl.scheduled_ingestion import run_scheduled_reconciliation
+    return run_scheduled_reconciliation(db)
+
