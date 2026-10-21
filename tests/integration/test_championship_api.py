@@ -63,4 +63,24 @@ def test_championship_history_endpoint():
     assert data["season"] == 2024
     assert data["status"] == "COMPLETED"
     assert data["champion"]["name"] == "Max Verstappen"
-    assert len(data["standings"]) >= 10
+    assert "standings_complete" in data
+
+def test_championship_history_no_fake_data_fallback(monkeypatch):
+    from data_engine.historical.historical_service import HistoricalStatsService
+    # Simulate full standings being unavailable for 2013 (offline/unreachable)
+    monkeypatch.setattr(HistoricalStatsService, "get_season_standings", classmethod(lambda cls, yr: []))
+    
+    response = client.get("/api/v1/championship/history/2013")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["season"] == 2013
+    assert data["standings_complete"] is False
+    assert data["champion"]["name"] == "Sebastian Vettel"
+    assert data["runner_up"]["name"] == "Fernando Alonso"
+    # Never invent rows with "runner_up" or "LAN"
+    assert len(data["standings"]) == 0
+    driver_ids = [r.get("driver_id") for r in data["standings"]]
+    assert "runner_up" not in driver_ids
+    codes = [r.get("code") for r in data["standings"]]
+    assert "LAN" not in codes
+

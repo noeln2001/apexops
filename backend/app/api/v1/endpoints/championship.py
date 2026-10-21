@@ -203,20 +203,46 @@ def get_historical_season_championship(season: int, db: Session = Depends(get_db
             "season": season,
             "status": "COMPLETED" if season < 2026 else "IN_PROGRESS",
             "champion": history_standings[0],
+            "runner_up": history_standings[1] if len(history_standings) > 1 else None,
             "metadata": champ_meta,
+            "standings_complete": True,
             "standings": history_standings
         }
 
     # Fetch verified historical standings via HistoricalStatsService
     standings = HistoricalStatsService.get_season_standings(season)
-    if not standings:
-        raise HTTPException(status_code=404, detail=f"Historical data for season {season} not available")
+    if standings:
+        return {
+            "season": season,
+            "status": "COMPLETED" if season < 2026 else "IN_PROGRESS",
+            "champion": standings[0] if standings else None,
+            "runner_up": standings[1] if len(standings) > 1 else None,
+            "metadata": champ_meta,
+            "standings_complete": True,
+            "standings": standings
+        }
 
-    return {
-        "season": season,
-        "status": "COMPLETED" if season < 2026 else "IN_PROGRESS",
-        "champion": standings[0] if standings else None,
-        "metadata": champ_meta,
-        "standings": standings
-    }
+    # If full standings are unavailable, return champion and runner-up metadata with standings_complete: false and real rows only
+    if champ_meta:
+        return {
+            "season": season,
+            "status": "COMPLETED" if season < 2026 else "IN_PROGRESS",
+            "champion": {
+                "name": champ_meta.get("champion_driver"),
+                "team": champ_meta.get("champion_team"),
+                "points": champ_meta.get("champion_points"),
+                "wins": champ_meta.get("champion_wins")
+            },
+            "runner_up": {
+                "name": champ_meta.get("runner_up_driver"),
+                "team": champ_meta.get("runner_up_team"),
+                "points": champ_meta.get("runner_up_points")
+            },
+            "metadata": champ_meta,
+            "standings_complete": False,
+            "standings": []
+        }
+
+    raise HTTPException(status_code=404, detail=f"Historical data for season {season} not available")
+
 

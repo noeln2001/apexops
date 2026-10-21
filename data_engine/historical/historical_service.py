@@ -371,32 +371,6 @@ class HistoricalStatsService:
         except Exception as e:
             logger.warning(f"Failed to fetch {year} from Jolpica: {e}")
 
-        # Fallback to champion summary if offline
-        champ_meta = next((c for c in HISTORICAL_CHAMPIONS if c["year"] == year), None)
-        if champ_meta:
-            fallback = [
-                {
-                    "position": 1,
-                    "driver_id": champ_meta["champion_code"].lower(),
-                    "name": champ_meta["champion_driver"],
-                    "code": champ_meta["champion_code"],
-                    "nationality": champ_meta["champion_nationality"],
-                    "team": champ_meta["champion_team"],
-                    "points": champ_meta["champion_points"],
-                    "wins": champ_meta["champion_wins"]
-                },
-                {
-                    "position": 2,
-                    "driver_id": "runner_up",
-                    "name": champ_meta["runner_up_driver"],
-                    "code": champ_meta["runner_up_driver"][:3].upper(),
-                    "nationality": "International",
-                    "team": champ_meta["runner_up_team"],
-                    "points": champ_meta["runner_up_points"],
-                    "wins": 3
-                }
-            ]
-            cls._standings_cache[year] = fallback
-            return fallback
-
+        # Return empty list rather than inventing placeholder/fake rows
         return []
+
