@@ -55,6 +55,15 @@ def list_races(
 
     return results
 
+@router.get("/races/live/current")
+def get_current_live_session(db: Session = Depends(get_db)):
+    """
+    Race Weekend Live Centre status:
+    Returns countdown to next session, live status, and OpenF1 session positions when active.
+    """
+    from backend.app.services.live_session_service import LiveSessionService
+    return LiveSessionService.get_current_live_state(db)
+
 @router.get("/races/{race_id}")
 def get_race_details(race_id: str, db: Session = Depends(get_db)):
     """Returns race weekend details, timetable, circuit timezone and IST conversion."""

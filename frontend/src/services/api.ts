@@ -92,6 +92,25 @@ export async function fetchCircuits(): Promise<CircuitItem[]> {
   return safeFetch<CircuitItem[]>(`${API_BASE}/circuits`, []);
 }
 
+export async function fetchLiveSessionCurrent(): Promise<any> {
+  return safeFetch(`${API_BASE}/races/live/current`, {
+    has_live_session: false,
+    status: "NO_LIVE_SESSION",
+    server_time_utc: new Date().toISOString(),
+    next_session: {
+      race_id: "2026-18",
+      race_name: "United States Grand Prix",
+      session_name: "Practice 1",
+      scheduled_utc: "2026-10-23T17:30:00Z",
+      countdown_seconds: 142000,
+      circuit_name: "Circuit of the Americas",
+      country: "USA"
+    },
+    live_positions: [],
+    polling_interval_sec: 10
+  });
+}
+
 export async function fetchDrivers(): Promise<unknown[]> {
   return safeFetch<unknown[]>(`${API_BASE}/drivers`, []);
 }
