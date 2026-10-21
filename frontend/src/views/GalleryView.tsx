@@ -17,11 +17,12 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Layers,
   Sparkles,
   Eye,
-  X
+  X,
+  Lock
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { FALLBACK_VERIFIED_GALLERY } from '../services/fallbackData';
 
 interface VerifiedImage {
@@ -71,6 +72,7 @@ interface SourceCompliance {
 }
 
 export const GalleryView: React.FC = () => {
+  const { isAdmin } = useAuth();
   // State
   const [images, setImages] = useState<VerifiedImage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -776,13 +778,26 @@ export const GalleryView: React.FC = () => {
               Save to Local Folder (Directory Picker)
             </button>
 
-            <button
-              onClick={handleDownloadZip}
-              className="px-3.5 py-1.5 bg-[#1f2937] hover:bg-[#374151] border border-[#4b5563] text-white rounded text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-            >
-              <Download className="w-4 h-4 text-[#38bdf8]" />
-              Download as ZIP Fallback
-            </button>
+            <div className="relative group">
+              <button
+                onClick={handleDownloadZip}
+                disabled={!isAdmin}
+                title={!isAdmin ? "Requires Administrator Authentication" : "Download verified images as ZIP"}
+                className={`px-3.5 py-1.5 border rounded text-xs font-semibold flex items-center gap-1.5 transition ${
+                  isAdmin
+                    ? 'bg-[#1f2937] hover:bg-[#374151] border-[#4b5563] text-white cursor-pointer'
+                    : 'bg-[#12151b] border-[#232b38] text-[#64748b] cursor-not-allowed opacity-60'
+                }`}
+              >
+                {isAdmin ? <Download className="w-4 h-4 text-[#38bdf8]" /> : <Lock className="w-4 h-4 text-[#64748b]" />}
+                Download as ZIP
+              </button>
+              {!isAdmin && (
+                <div className="absolute right-0 bottom-full mb-1 hidden group-hover:block z-20 w-48 p-2 bg-[#0e1117] border border-[#2d3748] rounded text-[10px] text-[#ff8080] shadow-xl">
+                  ZIP export requires Admin role. Use local folder save or log in.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

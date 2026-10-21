@@ -17,18 +17,51 @@ import {
   FALLBACK_HISTORICAL_CHAMPIONS
 } from './fallbackData';
 
-const API_BASE = '/api/v1';
+export const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api/v1';
 
-async function safeFetch<T>(url: string, fallback: T): Promise<T> {
+export type DataSourceMode = 'live' | 'fallback';
+
+export interface FetchResult<T> {
+  data: T;
+  source: DataSourceMode;
+}
+
+export let currentDataSourceMode: DataSourceMode = 'live';
+const listeners: Array<(mode: DataSourceMode) => void> = [];
+
+export function onDataSourceChange(cb: (mode: DataSourceMode) => void) {
+  listeners.push(cb);
+  return () => {
+    const idx = listeners.indexOf(cb);
+    if (idx !== -1) listeners.splice(idx, 1);
+  };
+}
+
+function setGlobalSource(source: DataSourceMode) {
+  if (currentDataSourceMode !== source) {
+    currentDataSourceMode = source;
+    listeners.forEach((fn) => fn(source));
+  }
+}
+
+export async function safeFetchResult<T>(url: string, fallback: T): Promise<FetchResult<T>> {
   try {
     const res = await fetch(url);
     if (res.ok) {
-      return await res.json();
+      setGlobalSource('live');
+      const data = await res.json();
+      return { data, source: 'live' };
     }
   } catch (e) {
     // Expected on static hosts like GitHub Pages where /api/v1 is not running
   }
-  return fallback;
+  setGlobalSource('fallback');
+  return { data: fallback, source: 'fallback' };
+}
+
+async function safeFetch<T>(url: string, fallback: T): Promise<T> {
+  const result = await safeFetchResult(url, fallback);
+  return result.data;
 }
 
 export async function fetchOverview(season: number = 2026): Promise<OverviewData> {

@@ -43,6 +43,17 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ data, loading, onNav
 
   return (
     <div className="space-y-6">
+      {/* Fallback Notice Banner */}
+      <div className="bg-[#1e150a] border border-[#f59e0b]/30 rounded-lg p-3 text-xs text-[#fbbf24] flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <AlertCircle className="w-4 h-4 text-[#f59e0b] shrink-0" />
+          <span>Showing verified motorsport data snapshot as of <strong>20 October 2026</strong>. Connect to local backend for live open-data sync.</span>
+        </div>
+        <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-[#f59e0b]/20 text-[10px] font-bold uppercase tracking-wider">
+          Demo Snapshot
+        </span>
+      </div>
+
       {/* Top Banner: Upcoming Grand Prix & Countdown */}
       <div className="bg-gradient-to-r from-[#121620] via-[#151a24] to-[#121620] border border-[#232b38] rounded-lg p-5 shadow-lg relative overflow-hidden">
         <div className="absolute -right-8 -top-8 w-44 h-44 bg-[#e10600] opacity-5 rounded-full blur-3xl pointer-events-none"></div>

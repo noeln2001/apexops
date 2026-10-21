@@ -1,0 +1,2609 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ApexOps \u2014 Motorsport Technology & Intelligence Platform",
+    "description": "Enterprise-grade Formula 1 Data, Analytics, Telemetry, and IT Operations Platform.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "description": "Liveness probe reporting backend availability and current reference time.",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "description": "Liveness probe reporting backend availability and current reference time.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Authenticate with email and password, returning a JWT token with user role.",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get Me",
+        "description": "Get current authenticated user's profile and permissions.",
+        "operationId": "get_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/overview": {
+      "get": {
+        "tags": [
+          "Overview"
+        ],
+        "summary": "Get Overview Dashboard",
+        "description": "Aggregates all key data cards for the Overview Dashboard.",
+        "operationId": "get_overview_dashboard_api_v1_overview_get",
+        "parameters": [
+          {
+            "name": "season",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Championship season year",
+              "default": 2026,
+              "title": "Season"
+            },
+            "description": "Championship season year"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/championship/tracker": {
+      "get": {
+        "tags": [
+          "Championship Tracker & Max Scenarios"
+        ],
+        "summary": "Get Championship Tracker",
+        "description": "Returns full championship standings with mathematical eligibility, points gaps,\nremaining rounds, and spotlight metadata for the selected driver.",
+        "operationId": "get_championship_tracker_api_v1_championship_tracker_get",
+        "parameters": [
+          {
+            "name": "driver_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Driver to highlight and analyze",
+              "default": "max_verstappen",
+              "title": "Driver Id"
+            },
+            "description": "Driver to highlight and analyze"
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2026,
+              "minimum": 1950,
+              "default": 2026,
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/championship/scenarios": {
+      "get": {
+        "tags": [
+          "Championship Tracker & Max Scenarios"
+        ],
+        "summary": "Get Title Scenarios",
+        "description": "Generates tactical championship scenarios answering:\n'What exactly needs to happen for Max Verstappen to win the 2026 Drivers' Championship?'",
+        "operationId": "get_title_scenarios_api_v1_championship_scenarios_get",
+        "parameters": [
+          {
+            "name": "driver_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Target driver for scenario engine",
+              "default": "max_verstappen",
+              "title": "Driver Id"
+            },
+            "description": "Target driver for scenario engine"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/championship/simulate": {
+      "post": {
+        "tags": [
+          "Championship Tracker & Max Scenarios"
+        ],
+        "summary": "Simulate Interactive Scenario",
+        "description": "Interactive race-by-race simulator that projects final standings and winner\nbased on custom finishing positions or instant preset actions.",
+        "operationId": "simulate_interactive_scenario_api_v1_championship_simulate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/championship/monte-carlo": {
+      "post": {
+        "tags": [
+          "Championship Tracker & Max Scenarios"
+        ],
+        "summary": "Run Monte Carlo Simulation",
+        "description": "Runs Monte Carlo simulation (1,000 to 50,000 runs) modeling remainder of the 2026 season.",
+        "operationId": "run_monte_carlo_simulation_api_v1_championship_monte_carlo_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonteCarloPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/championship/comparison": {
+      "get": {
+        "tags": [
+          "Championship Tracker & Max Scenarios"
+        ],
+        "summary": "Compare Drivers Head To Head",
+        "description": "Returns head-to-head comparison metrics and required points swing analysis.",
+        "operationId": "compare_drivers_head_to_head_api_v1_championship_comparison_get",
+        "parameters": [
+          {
+            "name": "driver_a",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "max_verstappen",
+              "title": "Driver A"
+            }
+          },
+          {
+            "name": "driver_b",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "antonelli",
+              "title": "Driver B"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/championship/history/champions": {
+      "get": {
+        "tags": [
+          "Championship Tracker & Max Scenarios"
+        ],
+        "summary": "Get Historical Champions List",
+        "description": "Returns the full chronological roll of honor of World Champions from 2010 to 2026.",
+        "operationId": "get_historical_champions_list_api_v1_championship_history_champions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/championship/history/{season}": {
+      "get": {
+        "tags": [
+          "Championship Tracker & Max Scenarios"
+        ],
+        "summary": "Get Historical Season Championship",
+        "description": "Returns official historical standings and title winner for past seasons (2010\u20132025).",
+        "operationId": "get_historical_season_championship_api_v1_championship_history__season__get",
+        "parameters": [
+          {
+            "name": "season",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gallery/sources": {
+      "get": {
+        "tags": [
+          "UHD Image Gallery"
+        ],
+        "summary": "Get Sources Compliance",
+        "description": "Returns the honest compliance, licensing, and access status of official and public sources:\nFormula 1, Red Bull Racing, Red Bull Content Pool, McLaren Downloads, Ferrari, and Wikimedia Commons.",
+        "operationId": "get_sources_compliance_api_v1_gallery_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gallery/images": {
+      "get": {
+        "tags": [
+          "UHD Image Gallery"
+        ],
+        "summary": "List Verified Images",
+        "description": "Lists discovered and verified candidates with dimensions, clarity metrics, and attribution.\nBy default, REJECTED images are excluded unless explicitly requested.",
+        "operationId": "list_verified_images_api_v1_gallery_images_get",
+        "parameters": [
+          {
+            "name": "driver",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Driver"
+            }
+          },
+          {
+            "name": "team",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team"
+            }
+          },
+          {
+            "name": "classification",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter: EXCELLENT, GOOD, REVIEW, REJECTED",
+              "title": "Classification"
+            },
+            "description": "Filter: EXCELLENT, GOOD, REVIEW, REJECTED"
+          },
+          {
+            "name": "orientation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "LANDSCAPE or PORTRAIT",
+              "title": "Orientation"
+            },
+            "description": "LANDSCAPE or PORTRAIT"
+          },
+          {
+            "name": "only_uhd",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Filter strictly for >=3840x2160 UHD",
+              "default": false,
+              "title": "Only Uhd"
+            },
+            "description": "Filter strictly for >=3840x2160 UHD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gallery/discover": {
+      "post": {
+        "tags": [
+          "UHD Image Gallery"
+        ],
+        "summary": "Run Discovery",
+        "description": "Executes web-wide discovery across permitted sources, retrieves original bytes,\nruns backend OpenCV/Pillow clarity & UHD tests, and stores verified candidates.",
+        "operationId": "run_discovery_api_v1_gallery_discover_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscoverRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gallery/verify-url": {
+      "post": {
+        "tags": [
+          "UHD Image Gallery"
+        ],
+        "summary": "Verify Direct Url",
+        "description": "Verifies any user-provided web image URL directly: checks SSRF safety,\nstreams bytes, inspects resolution, measures Laplacian sharpness, FFT upscaling,\nand returns full classification.",
+        "operationId": "verify_direct_url_api_v1_gallery_verify_url_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyUrlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gallery/manifest": {
+      "get": {
+        "tags": [
+          "UHD Image Gallery"
+        ],
+        "summary": "Download Manifest",
+        "description": "Generates and returns the complete JSON manifest of verified images with attribution,\nlicense details, SHA-256 hashes, and dimensions.",
+        "operationId": "download_manifest_api_v1_gallery_manifest_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gallery/export-zip": {
+      "post": {
+        "tags": [
+          "UHD Image Gallery"
+        ],
+        "summary": "Export Images Zip",
+        "description": "Packs selected verified images into a ZIP archive organized by:\n/{Team}/{Driver}/{Title}.{ext}\nIncluding manifest.json for complete license attribution.",
+        "operationId": "export_images_zip_api_v1_gallery_export_zip_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportZipRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seasons": {
+      "get": {
+        "tags": [
+          "Standings"
+        ],
+        "summary": "List Seasons",
+        "description": "List all available seasons in ApexOps (2010 to 2026).",
+        "operationId": "list_seasons_api_v1_seasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/seasons/{year}/standings/drivers": {
+      "get": {
+        "tags": [
+          "Standings"
+        ],
+        "summary": "Get Driver Standings",
+        "description": "Returns complete driver championship standings with gaps, wins, and team colors.",
+        "operationId": "get_driver_standings_api_v1_seasons__year__standings_drivers_get",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Year"
+            }
+          },
+          {
+            "name": "round_num",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Specific round filter",
+              "title": "Round Num"
+            },
+            "description": "Specific round filter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/seasons/{year}/standings/constructors": {
+      "get": {
+        "tags": [
+          "Standings"
+        ],
+        "summary": "Get Constructor Standings",
+        "description": "Returns complete constructor championship standings.",
+        "operationId": "get_constructor_standings_api_v1_seasons__year__standings_constructors_get",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drivers": {
+      "get": {
+        "tags": [
+          "Drivers"
+        ],
+        "summary": "List Drivers",
+        "description": "List drivers with current team affiliations and search.",
+        "operationId": "list_drivers_api_v1_drivers_get",
+        "parameters": [
+          {
+            "name": "season",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by active season",
+              "title": "Season"
+            },
+            "description": "Filter by active season"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by name, code or nationality",
+              "title": "Search"
+            },
+            "description": "Search by name, code or nationality"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/drivers/{driver_id}": {
+      "get": {
+        "tags": [
+          "Drivers"
+        ],
+        "summary": "Get Driver Profile",
+        "description": "Returns comprehensive driver career profile, statistics and performance breakdown.",
+        "operationId": "get_driver_profile_api_v1_drivers__driver_id__get",
+        "parameters": [
+          {
+            "name": "driver_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Driver Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/constructors": {
+      "get": {
+        "tags": [
+          "Constructors"
+        ],
+        "summary": "List Constructors",
+        "description": "List all Formula 1 constructors with team colors and statistics.",
+        "operationId": "list_constructors_api_v1_constructors_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/constructors/{constructor_id}": {
+      "get": {
+        "tags": [
+          "Constructors"
+        ],
+        "summary": "Get Constructor Profile",
+        "description": "Returns detailed constructor profile, season history and driver lineup.",
+        "operationId": "get_constructor_profile_api_v1_constructors__constructor_id__get",
+        "parameters": [
+          {
+            "name": "constructor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Constructor Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/circuits": {
+      "get": {
+        "tags": [
+          "Circuits"
+        ],
+        "summary": "List Circuits",
+        "description": "List all Formula 1 circuits with geographical coordinates, turns and lap records.",
+        "operationId": "list_circuits_api_v1_circuits_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/circuits/{circuit_id}": {
+      "get": {
+        "tags": [
+          "Circuits"
+        ],
+        "summary": "Get Circuit Details",
+        "description": "Returns detailed circuit profile, historical winners and configuration.",
+        "operationId": "get_circuit_details_api_v1_circuits__circuit_id__get",
+        "parameters": [
+          {
+            "name": "circuit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Circuit Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/races": {
+      "get": {
+        "tags": [
+          "Races & Sessions"
+        ],
+        "summary": "List Races",
+        "description": "List championship calendar with circuit locations, statuses, and IST times.",
+        "operationId": "list_races_api_v1_races_get",
+        "parameters": [
+          {
+            "name": "season",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Championship season year",
+              "default": 2026,
+              "title": "Season"
+            },
+            "description": "Championship season year"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (Completed, Scheduled, Confirmed)",
+              "title": "Status"
+            },
+            "description": "Filter by status (Completed, Scheduled, Confirmed)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/races/{race_id}": {
+      "get": {
+        "tags": [
+          "Races & Sessions"
+        ],
+        "summary": "Get Race Details",
+        "description": "Returns race weekend details, timetable, circuit timezone and IST conversion.",
+        "operationId": "get_race_details_api_v1_races__race_id__get",
+        "parameters": [
+          {
+            "name": "race_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Race Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/races/{race_id}/results": {
+      "get": {
+        "tags": [
+          "Races & Sessions"
+        ],
+        "summary": "Get Race Results",
+        "description": "Returns verified race classification results.",
+        "operationId": "get_race_results_api_v1_races__race_id__results_get",
+        "parameters": [
+          {
+            "name": "race_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Race Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/telemetry": {
+      "get": {
+        "tags": [
+          "Telemetry Lab"
+        ],
+        "summary": "Get Lap Telemetry Comparison",
+        "description": "Returns synchronized, distance-aligned telemetry channels (Speed, Throttle, Brake, Gear, RPM, DRS)\nand delta times between two drivers.",
+        "operationId": "get_lap_telemetry_comparison_api_v1_telemetry_get",
+        "parameters": [
+          {
+            "name": "race_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Race identifier e.g. 2026-17 or 2024-01",
+              "default": "2026-17",
+              "title": "Race Id"
+            },
+            "description": "Race identifier e.g. 2026-17 or 2024-01"
+          },
+          {
+            "name": "driver_a",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Primary driver ID / code",
+              "default": "norris",
+              "title": "Driver A"
+            },
+            "description": "Primary driver ID / code"
+          },
+          {
+            "name": "driver_b",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Comparison driver ID / code",
+              "default": "verstappen",
+              "title": "Driver B"
+            },
+            "description": "Comparison driver ID / code"
+          },
+          {
+            "name": "lap_a",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Lap number for driver A (defaults to fastest)",
+              "title": "Lap A"
+            },
+            "description": "Lap number for driver A (defaults to fastest)"
+          },
+          {
+            "name": "lap_b",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Lap number for driver B (defaults to fastest)",
+              "title": "Lap B"
+            },
+            "description": "Lap number for driver B (defaults to fastest)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/strategy": {
+      "get": {
+        "tags": [
+          "Strategy Lab"
+        ],
+        "summary": "Get Strategy Analysis",
+        "description": "Returns tyre degradation curves across compounds, stint pace evolution,\nand pit-stop undercut/overcut viability models.",
+        "operationId": "get_strategy_analysis_api_v1_strategy_get",
+        "parameters": [
+          {
+            "name": "race_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Race identifier",
+              "default": "2026-17",
+              "title": "Race Id"
+            },
+            "description": "Race identifier"
+          },
+          {
+            "name": "circuit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Circuit name",
+              "default": "Marina Bay Street Circuit",
+              "title": "Circuit"
+            },
+            "description": "Circuit name"
+          },
+          {
+            "name": "gap_sec",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "description": "Current gap between chasing car and lead car",
+              "default": 2.1,
+              "title": "Gap Sec"
+            },
+            "description": "Current gap between chasing car and lead car"
+          },
+          {
+            "name": "lead_compound",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Lead car tyre compound",
+              "default": "MEDIUM",
+              "title": "Lead Compound"
+            },
+            "description": "Lead car tyre compound"
+          },
+          {
+            "name": "chase_compound",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Chasing car tyre compound",
+              "default": "HARD",
+              "title": "Chase Compound"
+            },
+            "description": "Chasing car tyre compound"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/championship": {
+      "get": {
+        "tags": [
+          "Championship Simulator"
+        ],
+        "summary": "Get Default Championship Simulation",
+        "description": "Returns baseline Monte Carlo championship probabilities using current championship points.",
+        "operationId": "get_default_championship_simulation_api_v1_simulations_championship_get",
+        "parameters": [
+          {
+            "name": "season",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026,
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Championship Simulator"
+        ],
+        "summary": "Post Custom Championship Simulation",
+        "description": "Executes either a user-defined scenario simulation or custom Monte Carlo.",
+        "operationId": "post_custom_championship_simulation_api_v1_simulations_championship_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/news": {
+      "get": {
+        "tags": [
+          "News & Regulations"
+        ],
+        "summary": "List News",
+        "description": "Returns curated Formula 1 news, technical developments, and FIA regulatory bulletins.",
+        "operationId": "list_news_api_v1_news_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by category (Technical, Regulations, Official, Race Preview)",
+              "title": "Category"
+            },
+            "description": "Filter by category (Technical, Regulations, Official, Race Preview)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by confirmation status",
+              "title": "Status"
+            },
+            "description": "Filter by confirmation status"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search term in headline or summary",
+              "title": "Search"
+            },
+            "description": "Search term in headline or summary"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/news/refresh": {
+      "post": {
+        "tags": [
+          "News & Regulations"
+        ],
+        "summary": "Refresh News",
+        "description": "Triggers an ingestion run to fetch latest RSS headlines.",
+        "operationId": "refresh_news_api_v1_news_refresh_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/status": {
+      "get": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Get System Status",
+        "description": "Returns unified real-time observability telemetry:\n- Host hardware (CPU %, Memory RSS, Disk)\n- Database latency and storage\n- External data providers health (HEALTHY, DEGRADED, UNAVAILABLE)\n- API latency percentiles (p50, p95, p99)\n- Ingestion freshness & staleness alerts\n- Background workers state\n- Last verified backup & restore",
+        "operationId": "get_system_status_api_v1_operations_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/telemetry": {
+      "get": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Get Api Telemetry",
+        "description": "Returns actual measured API response-time percentiles, throughput, error rates, and slowest routes.",
+        "operationId": "get_api_telemetry_api_v1_operations_telemetry_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/logs": {
+      "get": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Get Operational Logs",
+        "description": "Returns structured operational logs with secret redaction and correlation ID tracking.",
+        "operationId": "get_operational_logs_api_v1_operations_logs_get",
+        "parameters": [
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by log severity: ALL, INFO, WARNING, ERROR",
+              "default": "ALL",
+              "title": "Level"
+            },
+            "description": "Filter by log severity: ALL, INFO, WARNING, ERROR"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search query string matching log message or logger",
+              "title": "Query"
+            },
+            "description": "Search query string matching log message or logger"
+          },
+          {
+            "name": "correlation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exact correlation ID lookup",
+              "title": "Correlation Id"
+            },
+            "description": "Exact correlation ID lookup"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum log entries to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum log entries to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/jobs": {
+      "get": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Get Scheduled Jobs",
+        "description": "Lists registered background workers, schedule intervals, last execution time, and error counters.",
+        "operationId": "get_scheduled_jobs_api_v1_operations_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/database": {
+      "get": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Get Database Diagnostics",
+        "description": "Provides deep storage and health diagnostics for database tables and storage engines.",
+        "operationId": "get_database_diagnostics_api_v1_operations_database_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/drills": {
+      "get": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "List Incident Drills",
+        "description": "Lists the 8 operational trackside incident drills and their real-time state.",
+        "operationId": "list_incident_drills_api_v1_operations_drills_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/drills/{scenario_key}/trigger": {
+      "post": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Trigger Incident Drill",
+        "description": "Injects a synthetic incident drill for trackside operator diagnosis.",
+        "operationId": "trigger_incident_drill_api_v1_operations_drills__scenario_key__trigger_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scenario_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/drills/{scenario_key}/remediate": {
+      "post": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Remediate Incident Drill",
+        "description": "Executes the operational remediation playbook to restore system to nominal health.",
+        "operationId": "remediate_incident_drill_api_v1_operations_drills__scenario_key__remediate_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scenario_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/backups": {
+      "get": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "List Backups",
+        "description": "Lists all available verified hot backups.",
+        "operationId": "list_backups_api_v1_operations_backups_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Create Backup",
+        "description": "Triggers an online, non-blocking hot database backup with integrity verification.",
+        "operationId": "create_backup_api_v1_operations_backups_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BackupRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/operations/backups/{filename}/test-restore": {
+      "post": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Test Isolated Restore",
+        "description": "Executes a non-destructive isolated restore test in a sandboxed directory.\nGuaranteed never to touch or overwrite production data.",
+        "operationId": "test_isolated_restore_api_v1_operations_backups__filename__test_restore_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Filename"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/import": {
+      "post": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Run Import",
+        "description": "Manually triggers the historical or current season data import pipeline.",
+        "operationId": "run_import_api_v1_admin_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/reconcile": {
+      "post": {
+        "tags": [
+          "Operations & Observability"
+        ],
+        "summary": "Run Reconciliation",
+        "description": "Validates 2026 calendar and standings around 20 October 2026 reference date.",
+        "operationId": "run_reconciliation_api_v1_admin_reconcile_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/exports/{dataset}": {
+      "get": {
+        "tags": [
+          "Data Exports"
+        ],
+        "summary": "Export Dataset",
+        "description": "Safely exports controlled data sets with pagination and attribution.",
+        "operationId": "export_dataset_api_v1_exports__dataset__get",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026,
+              "title": "Season"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Format: csv or json",
+              "default": "csv",
+              "title": "Format"
+            },
+            "description": "Format: csv or json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BackupRequest": {
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "default": "Manual snapshot via console"
+          }
+        },
+        "type": "object",
+        "title": "BackupRequest"
+      },
+      "DiscoverRequest": {
+        "properties": {
+          "driver_name": {
+            "type": "string",
+            "title": "Driver Name",
+            "description": "Driver full name",
+            "default": "Max Verstappen"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name",
+            "description": "Constructor / team name",
+            "default": "Red Bull Racing"
+          },
+          "season": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Season",
+            "description": "Championship season",
+            "default": 2026
+          },
+          "grand_prix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grand Prix",
+            "description": "Optional Grand Prix name (e.g. Chinese GP, Monaco)"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 25.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "description": "Search discovery limit",
+            "default": 10
+          },
+          "thresholds": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thresholds",
+            "description": "Custom configurable verification thresholds"
+          }
+        },
+        "type": "object",
+        "title": "DiscoverRequest"
+      },
+      "ExportZipRequest": {
+        "properties": {
+          "image_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Image Ids",
+            "description": "List of verified candidate IDs to include in ZIP"
+          }
+        },
+        "type": "object",
+        "required": [
+          "image_ids"
+        ],
+        "title": "ExportZipRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImportRequest": {
+        "properties": {
+          "season": {
+            "type": "integer",
+            "maximum": 2026.0,
+            "minimum": 1950.0,
+            "title": "Season",
+            "description": "Championship season year",
+            "default": 2026
+          }
+        },
+        "type": "object",
+        "title": "ImportRequest"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "MonteCarloPayload": {
+        "properties": {
+          "iterations": {
+            "type": "integer",
+            "maximum": 50000.0,
+            "minimum": 100.0,
+            "title": "Iterations",
+            "description": "Simulation runs count",
+            "default": 10000
+          },
+          "random_seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Random Seed",
+            "description": "Optional seed for deterministic testing"
+          }
+        },
+        "type": "object",
+        "title": "MonteCarloPayload"
+      },
+      "ScenarioRound": {
+        "properties": {
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "finishing_order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Finishing Order"
+          }
+        },
+        "type": "object",
+        "required": [
+          "round",
+          "finishing_order"
+        ],
+        "title": "ScenarioRound"
+      },
+      "SimulationPayload": {
+        "properties": {
+          "selections": {
+            "type": "object",
+            "title": "Selections",
+            "description": "Race-by-race finishing order selections"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset",
+            "description": "Optional preset key: max_wins_austin, max_wins_all, etc."
+          },
+          "target_driver_id": {
+            "type": "string",
+            "title": "Target Driver Id",
+            "description": "Primary driver to track",
+            "default": "max_verstappen"
+          }
+        },
+        "type": "object",
+        "title": "SimulationPayload"
+      },
+      "SimulationRequest": {
+        "properties": {
+          "season": {
+            "type": "integer",
+            "title": "Season",
+            "default": 2026
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "default": "monte_carlo"
+          },
+          "iterations": {
+            "type": "integer",
+            "title": "Iterations",
+            "default": 1000
+          },
+          "scenarios": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ScenarioRound"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "title": "SimulationRequest"
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "user": {
+            "type": "object",
+            "title": "User"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "user"
+        ],
+        "title": "TokenResponse"
+      },
+      "UserResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "is_admin": {
+            "type": "boolean",
+            "title": "Is Admin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "role",
+          "is_admin"
+        ],
+        "title": "UserResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VerifyUrlRequest": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "Target image URL to inspect and verify on backend"
+          },
+          "driver_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Name",
+            "default": "Formula 1 Driver"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name",
+            "default": "F1 Team"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name",
+            "default": "External Web Source"
+          },
+          "license_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Name",
+            "default": "Public Web Reference"
+          },
+          "thresholds": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thresholds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "VerifyUrlRequest"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/login"
+          }
+        }
+      }
+    }
+  }
+}

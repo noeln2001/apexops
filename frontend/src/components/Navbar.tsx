@@ -1,20 +1,31 @@
-import React from 'react';
-import { Activity, ShieldCheck, Clock, Search, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Clock, RefreshCw, UserCheck, LogIn, Lock } from 'lucide-react';
 import { F1Logo } from './F1Logo';
+import { useAuth } from '../context/AuthContext';
+import { currentDataSourceMode, onDataSourceChange, DataSourceMode } from '../services/api';
 
 interface NavbarProps {
   season: number;
   onSeasonChange: (season: number) => void;
   onRefresh: () => void;
   loading: boolean;
+  onOpenLogin: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   season,
   onSeasonChange,
   onRefresh,
-  loading
+  loading,
+  onOpenLogin
 }) => {
+  const { user, isAuthenticated, logout } = useAuth();
+  const [dataMode, setDataMode] = useState<DataSourceMode>(currentDataSourceMode);
+
+  useEffect(() => {
+    return onDataSourceChange((mode) => setDataMode(mode));
+  }, []);
+
   return (
     <header className="h-14 bg-[#0e1117] border-b border-[#1f2530] px-4 flex items-center justify-between sticky top-0 z-50">
       {/* Brand & Platform */}
@@ -32,22 +43,27 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Center Status Indicators */}
-      <div className="hidden lg:flex items-center space-x-6 text-xs text-[#94a3b8]">
+      <div className="hidden lg:flex items-center space-x-4 text-xs text-[#94a3b8]">
         <div className="flex items-center space-x-2">
           <Clock className="w-3.5 h-3.5 text-[#38bdf8]" />
           <span>PROJECT ANCHOR: <strong className="text-white">20 OCT 2026</strong></span>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
-          <span>UPSTREAM: <strong className="text-white">JOLPICA / FIA ACTIVE</strong></span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#10b981]" />
-          <span>ENV: <strong className="text-white">STANDALONE (VERIFIED)</strong></span>
-        </div>
+
+        {/* Dynamic Mode Badge */}
+        {dataMode === 'live' ? (
+          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#06301d] border border-[#10b981]/40 text-[#34d399] font-bold text-[11px] tracking-wide">
+            <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+            <span>LIVE API</span>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#331e08] border border-[#f59e0b]/40 text-[#fbbf24] font-bold text-[11px] tracking-wide" title="Static standalone deployment using verified snapshot data as of 20 Oct 2026">
+            <span className="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
+            <span>DEMO DATA (API offline)</span>
+          </div>
+        )}
       </div>
 
-      {/* Controls & Season Filter */}
+      {/* Controls & Season Filter & Auth */}
       <div className="flex items-center space-x-3">
         <div className="flex items-center bg-[#151922] border border-[#232b38] rounded px-2.5 py-1 text-xs">
           <span className="text-[#64748b] mr-2 font-medium">SEASON:</span>
@@ -84,6 +100,31 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#e10600]' : ''}`} />
         </button>
+
+        {/* Authentication Button */}
+        {isAuthenticated ? (
+          <div className="flex items-center space-x-2 pl-2 border-l border-[#1f2530]">
+            <span className="hidden sm:flex items-center text-xs text-[#10b981] font-semibold space-x-1">
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>{user?.role?.toUpperCase()}</span>
+            </span>
+            <button
+              onClick={logout}
+              className="px-2 py-1 bg-[#1a202c] hover:bg-[#2d3748] text-white rounded text-xs transition cursor-pointer"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onOpenLogin}
+            className="flex items-center space-x-1.5 px-2.5 py-1 bg-[#e10600]/15 hover:bg-[#e10600]/25 border border-[#e10600]/40 text-[#ff8080] hover:text-white rounded text-xs font-semibold transition cursor-pointer"
+            title="Log in for administrator privileges"
+          >
+            <Lock className="w-3 h-3" />
+            <span className="hidden sm:inline">Admin Login</span>
+          </button>
+        )}
       </div>
     </header>
   );

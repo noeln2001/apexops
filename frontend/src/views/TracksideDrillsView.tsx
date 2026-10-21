@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDrills, triggerDrill, remediateDrill } from '../services/api';
 import { IncidentDrillItem } from '../types';
-import { Terminal, AlertTriangle, ShieldCheck, Play, CheckCircle2, RotateCcw, Wrench } from 'lucide-react';
+import { Terminal, AlertTriangle, ShieldCheck, Play, CheckCircle2, RotateCcw, Wrench, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const TracksideDrillsView: React.FC = () => {
+  const { isAdmin } = useAuth();
   const [drills, setDrills] = useState<IncidentDrillItem[]>([]);
   const [activeDrill, setActiveDrill] = useState<IncidentDrillItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -30,6 +32,7 @@ export const TracksideDrillsView: React.FC = () => {
   }, []);
 
   const handleTrigger = async (key: string) => {
+    if (!isAdmin) return;
     setActionLoading(true);
     try {
       await triggerDrill(key);
@@ -40,6 +43,7 @@ export const TracksideDrillsView: React.FC = () => {
   };
 
   const handleRemediate = async (key: string) => {
+    if (!isAdmin) return;
     setActionLoading(true);
     try {
       await remediateDrill(key);
@@ -117,31 +121,51 @@ export const TracksideDrillsView: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleTrigger(activeDrill.scenario_key)}
-                    disabled={actionLoading || activeDrill.status === 'ACTIVE'}
-                    className={`px-3 py-1.5 rounded text-xs font-bold flex items-center space-x-1.5 transition cursor-pointer ${
-                      activeDrill.status === 'ACTIVE'
-                        ? 'bg-[#291717] text-[#ff8080] border border-[#522020] opacity-50 cursor-not-allowed'
-                        : 'bg-[#e10600] hover:bg-[#b80500] text-white'
-                    }`}
-                  >
-                    <Play className="w-3.5 h-3.5" />
-                    <span>Inject Fault</span>
-                  </button>
+                  <div className="relative group">
+                    <button
+                      onClick={() => handleTrigger(activeDrill.scenario_key)}
+                      disabled={actionLoading || activeDrill.status === 'ACTIVE' || !isAdmin}
+                      title={!isAdmin ? "Requires Administrator Authentication" : "Inject synthetic failure"}
+                      className={`px-3 py-1.5 rounded text-xs font-bold flex items-center space-x-1.5 transition ${
+                        !isAdmin
+                          ? 'bg-[#232b38] text-[#64748b] cursor-not-allowed opacity-60'
+                          : activeDrill.status === 'ACTIVE'
+                          ? 'bg-[#291717] text-[#ff8080] border border-[#522020] opacity-50 cursor-not-allowed'
+                          : 'bg-[#e10600] hover:bg-[#b80500] text-white cursor-pointer'
+                      }`}
+                    >
+                      {isAdmin ? <Play className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                      <span>Inject Fault</span>
+                    </button>
+                    {!isAdmin && (
+                      <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-20 w-48 p-2 bg-[#0e1117] border border-[#2d3748] rounded text-[10px] text-[#ff8080] shadow-xl">
+                        Fault injection restricted to Admin. Please log in.
+                      </div>
+                    )}
+                  </div>
 
-                  <button
-                    onClick={() => handleRemediate(activeDrill.scenario_key)}
-                    disabled={actionLoading || activeDrill.status !== 'ACTIVE'}
-                    className={`px-3 py-1.5 rounded text-xs font-bold flex items-center space-x-1.5 transition cursor-pointer ${
-                      activeDrill.status === 'ACTIVE'
-                        ? 'bg-[#10b981] hover:bg-[#059669] text-white'
-                        : 'bg-[#132219] text-[#64748b] border border-[#1f3a29] opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <Wrench className="w-3.5 h-3.5" />
-                    <span>Execute Playbook</span>
-                  </button>
+                  <div className="relative group">
+                    <button
+                      onClick={() => handleRemediate(activeDrill.scenario_key)}
+                      disabled={actionLoading || activeDrill.status !== 'ACTIVE' || !isAdmin}
+                      title={!isAdmin ? "Requires Administrator Authentication" : "Execute remediation playbook"}
+                      className={`px-3 py-1.5 rounded text-xs font-bold flex items-center space-x-1.5 transition ${
+                        !isAdmin
+                          ? 'bg-[#232b38] text-[#64748b] cursor-not-allowed opacity-60'
+                          : activeDrill.status === 'ACTIVE'
+                          ? 'bg-[#10b981] hover:bg-[#059669] text-white cursor-pointer'
+                          : 'bg-[#132219] text-[#64748b] border border-[#1f3a29] opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      <Wrench className="w-3.5 h-3.5" />
+                      <span>Execute Playbook</span>
+                    </button>
+                    {!isAdmin && (
+                      <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-20 w-48 p-2 bg-[#0e1117] border border-[#2d3748] rounded text-[10px] text-[#ff8080] shadow-xl">
+                        Remediation execution restricted to Admin.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

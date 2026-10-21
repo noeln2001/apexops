@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { fetchBackups, createBackup, testIsolatedRestore } from '../services/api';
-import { Save, ShieldCheck, RefreshCw, CheckCircle2, AlertTriangle, Play, Database } from 'lucide-react';
+import { Save, ShieldCheck, RefreshCw, CheckCircle2, AlertTriangle, Play, Database, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const BackupsView: React.FC = () => {
+  const { isAuthenticated, isAdmin } = useAuth();
   const [backups, setBackups] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -23,6 +25,7 @@ export const BackupsView: React.FC = () => {
   }, []);
 
   const handleCreateSnapshot = async () => {
+    if (!isAdmin) return;
     setActionLoading(true);
     try {
       await createBackup();
@@ -33,6 +36,7 @@ export const BackupsView: React.FC = () => {
   };
 
   const handleTestRestore = async (filename: string) => {
+    if (!isAdmin) return;
     setActionLoading(true);
     setRestoreResult(null);
     try {
@@ -54,14 +58,26 @@ export const BackupsView: React.FC = () => {
           <p className="text-xs text-[#94a3b8]">Online non-blocking hot database snapshots and isolated sandbox test restore validation</p>
         </div>
 
-        <button
-          onClick={handleCreateSnapshot}
-          disabled={actionLoading}
-          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#e10600] hover:bg-[#b80500] text-white rounded text-xs font-bold transition cursor-pointer"
-        >
-          <Database className="w-3.5 h-3.5" />
-          <span>Take Hot Snapshot</span>
-        </button>
+        <div className="relative group">
+          <button
+            onClick={handleCreateSnapshot}
+            disabled={actionLoading || !isAdmin}
+            title={!isAdmin ? "Requires Administrator Authentication" : "Trigger immediate database hot snapshot"}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-bold transition ${
+              isAdmin
+                ? 'bg-[#e10600] hover:bg-[#b80500] text-white cursor-pointer'
+                : 'bg-[#232b38] text-[#64748b] cursor-not-allowed opacity-60'
+            }`}
+          >
+            {isAdmin ? <Database className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+            <span>Take Hot Snapshot</span>
+          </button>
+          {!isAdmin && (
+            <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-20 w-56 p-2 bg-[#0e1117] border border-[#2d3748] rounded text-[10px] text-[#ff8080] shadow-xl">
+              Write actions disabled. Click "Admin Login" in navbar to authenticate.
+            </div>
+          )}
+        </div>
       </div>
 
       {/* RPO / RTO Target Summary */}

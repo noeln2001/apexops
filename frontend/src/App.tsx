@@ -19,6 +19,7 @@ import { BackupsView } from './views/BackupsView';
 import { ExportsView } from './views/ExportsView';
 import { AboutView } from './views/AboutView';
 import { GalleryView } from './views/GalleryView';
+import { LoginModal } from './components/LoginModal';
 import { fetchOverview } from './services/api';
 import { OverviewData } from './types';
 
@@ -27,6 +28,7 @@ export function App() {
   const [season, setSeason] = useState<number>(2026);
   const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
   const loadOverview = () => {
     setLoading(true);
@@ -53,6 +55,12 @@ export function App() {
         onSeasonChange={(s) => setSeason(s)}
         onRefresh={loadOverview}
         loading={loading}
+        onOpenLogin={() => setIsLoginModalOpen(true)}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
 
       <div className="flex-1 flex overflow-hidden">
