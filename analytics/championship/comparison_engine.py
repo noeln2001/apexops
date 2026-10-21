@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional
+
 from analytics.championship.scoring_rules import REMAINING_ROUNDS_2026, calculate_max_remaining_points
 
 DRIVER_ALIAS_MAP: Dict[str, str] = {

@@ -104,3 +104,62 @@ def post_custom_championship_simulation(
             "mode": "monte_carlo",
             "results": results
         }
+
+
+class SnapshotRequest(BaseModel):
+    season: int = 2026
+    round: int = 17
+    iterations: int = 1000
+
+
+@router.get("/simulations/predictions/evolution")
+def get_prediction_evolution(
+    season: int = Query(2026),
+    db: Session = Depends(get_db)
+):
+    """Returns round-by-round Monte Carlo title-probability evolution for all championship contenders."""
+    from analytics.championship.prediction_tracker import PredictionTracker
+    return PredictionTracker.get_evolution(season=season, db=db)
+
+
+@router.get("/simulations/predictions/calibration")
+def get_prediction_calibration(
+    seasons: Optional[str] = Query(None, description="Comma-separated list of completed seasons (e.g. 2021,2022,2023,2024,2025)"),
+    db: Session = Depends(get_db)
+):
+    """Calculates calibration curves, Brier score, and expected calibration error against actual outcomes for completed seasons."""
+    from analytics.championship.prediction_tracker import PredictionTracker
+    season_list = [int(s.strip()) for s in seasons.split(",")] if seasons else None
+    return PredictionTracker.get_calibration(db=db, seasons=season_list)
+
+
+@router.post("/simulations/predictions/snapshot")
+def record_prediction_snapshot(
+    req: SnapshotRequest,
+    db: Session = Depends(get_db)
+):
+    """Records a title probability snapshot for a given round from current simulation."""
+    from analytics.championship.eligibility_engine import ChampionshipEligibilityEngine
+    from analytics.championship.monte_carlo_engine import MonteCarloTitleEngine
+    from analytics.championship.prediction_tracker import PredictionTracker
+    from backend.app.api.v1.endpoints.championship import _load_live_standings
+
+    raw = _load_live_standings(db, season=req.season)
+    processed = ChampionshipEligibilityEngine.calculate_eligibility(raw)
+    mc_result = MonteCarloTitleEngine.run_simulation(processed, iterations=req.iterations)
+    saved = PredictionTracker.record_round_snapshot(
+        season=req.season,
+        round_num=req.round,
+        standings=processed,
+        simulation_results=mc_result.get("drivers", []),
+        db=db,
+        iterations=req.iterations,
+    )
+    return {
+        "status": "RECORDED",
+        "season": req.season,
+        "round": req.round,
+        "snapshots_saved": len(saved),
+        "snapshots": saved,
+    }
+

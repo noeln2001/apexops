@@ -133,3 +133,23 @@ class ConstructorStanding(Base):
     __table_args__ = (
         Index("idx_constructor_standings_season_round_team", "season_year", "round", "constructor_id", unique=True),
     )
+
+
+class MonteCarloSnapshot(Base):
+    __tablename__ = "monte_carlo_snapshots"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    season_year = Column(Integer, nullable=False, index=True)
+    round = Column(Integer, nullable=False, index=True)
+    driver_id = Column(String(50), ForeignKey("drivers.driver_id"), nullable=False, index=True)
+    title_probability = Column(Float, nullable=False)  # 0.0 to 1.0 (e.g. 0.778)
+    top3_probability = Column(Float, nullable=False, default=0.0)
+    expected_points = Column(Float, nullable=False, default=0.0)
+    iterations = Column(Integer, default=1000)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    driver_rel = relationship("Driver")
+
+    __table_args__ = (
+        Index("idx_mc_snapshot_season_round_driver", "season_year", "round", "driver_id", unique=True),
+    )
+

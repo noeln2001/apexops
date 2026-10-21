@@ -370,3 +370,42 @@ export interface DriverComparisonData {
   };
 }
 
+export interface PredictionDriverSeries {
+  driver_id: string;
+  name: string;
+  color: string;
+  probabilities: number[];
+  current_probability: number;
+  peak_probability: number;
+}
+
+export interface PredictionEvolutionData {
+  season: number;
+  rounds: number[];
+  total_rounds_completed: number;
+  drivers: PredictionDriverSeries[];
+  current_leader: string;
+}
+
+export interface CalibrationBin {
+  bin_label: string;
+  range_min: number;
+  range_max: number;
+  predicted_avg_pct: number;
+  actual_frequency_pct: number;
+  sample_size: number;
+  calibration_gap: number;
+}
+
+export interface PredictionCalibrationData {
+  seasons_evaluated: number[];
+  actual_champions: Record<string, string>;
+  total_predictions: number;
+  brier_score: number;
+  expected_calibration_error: number;
+  reliability_verdict: string;
+  reliability_assessment: string;
+  calibration_curve: CalibrationBin[];
+}
+
+

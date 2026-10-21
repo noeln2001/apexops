@@ -10,6 +10,7 @@ from backend.app.models.f1_core import (
 from backend.app.models.f1_events import (
     ConstructorStanding,
     DriverStanding,
+    MonteCarloSnapshot,
     QualifyingResult,
     Race,
     Session,
@@ -30,6 +31,7 @@ __all__ = [
     "Season",
     "ConstructorStanding",
     "DriverStanding",
+    "MonteCarloSnapshot",
     "QualifyingResult",
     "Race",
     "Session",
