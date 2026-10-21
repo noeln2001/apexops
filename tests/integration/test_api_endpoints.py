@@ -84,3 +84,29 @@ def test_isolated_restore_guarantee():
     data = res.json()
     assert data["status"] == "SUCCESS"
     assert "isolation_guarantee" in data
+
+def test_operations_telemetry_and_status_no_deadlock():
+    import threading
+    results = {}
+
+    def fetch(url, key):
+        res = client.get(url)
+        results[key] = res
+
+    # Call /api/v1/operations/status with 5s timeout
+    t1 = threading.Thread(target=fetch, args=("/api/v1/operations/status", "status"))
+    t1.start()
+    t1.join(timeout=5.0)
+    assert not t1.is_alive(), "/api/v1/operations/status deadlocked or timed out"
+    assert "status" in results and results["status"].status_code == 200
+
+    # Call /api/v1/operations/telemetry with 5s timeout
+    t2 = threading.Thread(target=fetch, args=("/api/v1/operations/telemetry", "telemetry"))
+    t2.start()
+    t2.join(timeout=5.0)
+    assert not t2.is_alive(), "/api/v1/operations/telemetry deadlocked or timed out"
+    assert "telemetry" in results and results["telemetry"].status_code == 200
+    telemetry_data = results["telemetry"].json()
+    assert "percentiles" in telemetry_data
+    assert "sample_size" in telemetry_data["percentiles"]
+
