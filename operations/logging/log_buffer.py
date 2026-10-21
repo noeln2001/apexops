@@ -4,7 +4,7 @@ import time
 from collections import deque
 from datetime import datetime
 from typing import Dict, Any, List, Optional
-from threading import Lock
+from threading import RLock
 
 # Regex patterns to redact sensitive credentials, tokens, and authorization headers
 SENSITIVE_PATTERNS = [
@@ -30,7 +30,7 @@ class InMemoryLogHandler(logging.Handler):
         super().__init__()
         self.capacity = capacity
         self.buffer: deque = deque(maxlen=capacity)
-        self.lock = Lock()
+        self._buffer_lock = RLock()
 
     def emit(self, record: logging.LogRecord):
         try:
@@ -46,13 +46,13 @@ class InMemoryLogHandler(logging.Handler):
 
             entry = {
                 "id": f"{int(time.time() * 1000)}-{record.relativeCreated:.0f}",
-                "timestamp": datetime.utcfromtimestamp(record.created).isoformat() + "Z",
+                "timestamp": datetime.utcnow().isoformat() + "Z",
                 "level": record.levelname,
                 "logger": record.name,
                 "message": safe_msg,
                 "correlation_id": correlation_id or "N/A"
             }
-            with self.lock:
+            with self._buffer_lock:
                 self.buffer.append(entry)
         except Exception:
             self.handleError(record)
@@ -64,7 +64,7 @@ class InMemoryLogHandler(logging.Handler):
         correlation_id: Optional[str] = None,
         limit: int = 50
     ) -> List[Dict[str, Any]]:
-        with self.lock:
+        with self._buffer_lock:
             results = []
             normalized_level = level.upper() if level and level.upper() != "ALL" else None
             normalized_query = query.lower() if query else None

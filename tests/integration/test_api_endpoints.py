@@ -110,3 +110,26 @@ def test_operations_telemetry_and_status_no_deadlock():
     assert "percentiles" in telemetry_data
     assert "sample_size" in telemetry_data["percentiles"]
 
+def test_real_traffic_recorded_in_telemetry_and_logs():
+    # Make a distinct test request
+    driver_res = client.get("/api/v1/drivers")
+    assert driver_res.status_code == 200
+
+    # Verify traffic appears in telemetry
+    telem_res = client.get("/api/v1/operations/telemetry")
+    assert telem_res.status_code == 200
+    telem = telem_res.json()
+    assert telem["total_requests"] >= 1
+    # Check top_endpoints or status_breakdown
+    assert telem["status_breakdown"]["2xx"] >= 1
+
+    # Verify traffic appears in operational logs
+    logs_res = client.get("/api/v1/operations/logs")
+    assert logs_res.status_code == 200
+    logs = logs_res.json()
+    assert isinstance(logs, list)
+    assert len(logs) > 0
+    # Confirm log entries contain structured info
+    assert any("GET /api/v1/drivers" in entry["message"] for entry in logs)
+
+
