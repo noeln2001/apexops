@@ -8,7 +8,7 @@ import urllib.parse
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from data_engine.media.url_safety import is_safe_url
+from data_engine.media.url_safety import is_safe_url, safe_download_bytes
 from data_engine.media.image_verifier import ImageQualityVerifier
 
 USER_AGENT = "ApexOpsF1Analytics/1.0 (https://apexops.internal; educational open-data motorsport research)"
@@ -185,54 +185,32 @@ class ImageDiscoveryService:
                 "rejection_reason": "No original URL provided."
             }
 
-        # 1. SSRF and safety check
-        safe, reason = is_safe_url(url)
-        if not safe:
-            return {
-                **candidate_info,
-                "is_valid": False,
-                "classification": "REJECTED",
-                "rejection_reason": f"URL Safety violation: {reason}"
-            }
-
-        # 2. Stream download with max 40MB limit
+        # 1 & 2. SSRF check, redirect hop re-validation, and streaming download
         MAX_BYTES = 40 * 1024 * 1024  # 40MB
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(req, timeout=20) as resp:
-                content_length = resp.headers.get("Content-Length")
-                if content_length and int(content_length) > MAX_BYTES:
-                    return {
-                        **candidate_info,
-                        "is_valid": False,
-                        "classification": "REJECTED",
-                        "rejection_reason": f"File exceeds maximum allowed size ({int(content_length)/(1024*1024):.1f}MB > 40MB)."
-                    }
-
-                buf = io.BytesIO()
-                total_read = 0
-                while True:
-                    chunk = resp.read(65536)
-                    if not chunk:
-                        break
-                    total_read += len(chunk)
-                    if total_read > MAX_BYTES:
-                        return {
-                            **candidate_info,
-                            "is_valid": False,
-                            "classification": "REJECTED",
-                            "rejection_reason": "File exceeded 40MB during download streaming."
-                        }
-                    buf.write(chunk)
-
-                raw_bytes = buf.getvalue()
-        except urllib.error.HTTPError as he:
+            raw_bytes, final_url = safe_download_bytes(
+                url,
+                max_hops=3,
+                timeout=20.0,
+                max_bytes=MAX_BYTES,
+                headers={"User-Agent": USER_AGENT}
+            )
+            candidate_info["verified_url"] = final_url
+        except ValueError as ve:
             return {
                 **candidate_info,
                 "is_valid": False,
                 "classification": "REJECTED",
-                "rejection_reason": f"HTTP {he.code} {he.reason} - Source prohibited access or rate-limited."
+                "rejection_reason": f"URL Safety violation: {ve}"
             }
+        except Exception as e:
+            return {
+                **candidate_info,
+                "is_valid": False,
+                "classification": "REJECTED",
+                "rejection_reason": f"Download failed: {e}"
+            }
+
         except Exception as ex:
             return {
                 **candidate_info,
