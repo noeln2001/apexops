@@ -152,14 +152,47 @@ def run_monte_carlo_simulation(
 
 @router.get("/championship/comparison")
 def compare_drivers_head_to_head(
-    driver_a: str = Query(default="max_verstappen"),
-    driver_b: str = Query(default="antonelli"),
+    driver_a: Optional[str] = Query(None),
+    driver_b: Optional[str] = Query(None),
+    a: Optional[str] = Query(None),
+    b: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """Returns head-to-head comparison metrics and required points swing analysis."""
+    """Returns head-to-head comparison metrics, qualifying vs race delta, finishing distributions, and required points swing analysis."""
+    final_a = a or driver_a or "max_verstappen"
+    final_b = b or driver_b or "antonelli"
     raw_standings = _load_live_standings(db, season=2026)
     processed = ChampionshipEligibilityEngine.calculate_eligibility(raw_standings)
-    return DriverComparisonEngine.compare_drivers(processed, driver_a_id=driver_a, driver_b_id=driver_b)
+
+    from backend.app.models.f1_events import SessionResult
+    results = db.query(SessionResult).all()
+    return DriverComparisonEngine.compare_drivers(processed, driver_a_id=final_a, driver_b_id=final_b, session_results=results)
+
+@router.get("/championship/constructors/comparison")
+def compare_constructors_head_to_head(
+    team_a: Optional[str] = Query(None),
+    team_b: Optional[str] = Query(None),
+    a: Optional[str] = Query(None),
+    b: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """Returns constructor head-to-head points progression and finishing distributions."""
+    final_a = a or team_a or "red_bull"
+    final_b = b or team_b or "mclaren"
+    from backend.app.models.f1_core import Constructor
+    from backend.app.models.f1_events import ConstructorStanding
+    c_standings = db.query(ConstructorStanding).all()
+    c_list = []
+    for cs in c_standings:
+        c = db.query(Constructor).filter(Constructor.constructor_id == cs.constructor_id).first()
+        c_list.append({
+            "constructor_id": cs.constructor_id,
+            "name": c.name if c else cs.constructor_id,
+            "current_points": cs.points,
+            "position": cs.position,
+            "wins": cs.wins
+        })
+    return DriverComparisonEngine.compare_constructors(c_list, team_a_id=final_a, team_b_id=final_b)
 
 @router.get("/championship/history/champions")
 def get_historical_champions_list():

@@ -331,6 +331,10 @@ export interface DriverComparisonData {
     podiums: number;
     max_achievable: number;
     status: string;
+    avg_grid?: number;
+    avg_finish?: number;
+    positions_gained?: number;
+    finishing_distribution?: Record<string, number>;
   };
   driver_b: {
     id: string;
@@ -342,6 +346,10 @@ export interface DriverComparisonData {
     podiums: number;
     max_achievable: number;
     status: string;
+    avg_grid?: number;
+    avg_finish?: number;
+    positions_gained?: number;
+    finishing_distribution?: Record<string, number>;
   };
   points_difference: number;
   ahead_driver_id: string;
@@ -350,5 +358,15 @@ export interface DriverComparisonData {
   required_point_swing_per_round: number;
   races_needed_at_10pt_swing: number;
   tactical_analysis: string;
+  season_points_progression?: Array<{
+    round: number;
+    race_id: string;
+    driver_a_cumulative: number;
+    driver_b_cumulative: number;
+  }>;
+  qualifying_vs_race_delta?: {
+    driver_a: number;
+    driver_b: number;
+  };
 }
 
