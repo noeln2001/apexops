@@ -17,7 +17,6 @@ lib/
 lib64/
 parts/
 sdist/
-var/
 wheels/
 *.egg-info/
 .installed.cfg
@@ -27,13 +26,21 @@ wheels/
 .pytest_cache/
 .coverage
 htmlcov/
-cache/fastf1/
+cache/
+cache/**
 
-# Backups
+# Database & Backups
+data/*.db
+data/**/*.db
 backups/*.db
+backups/**/*.db
 
-# Node
+# Generated PDFs & artifacts
+*.pdf
+
+# Node & Frontend
 frontend/node_modules/
+frontend/dist/
 .npm
 
 # IDE
