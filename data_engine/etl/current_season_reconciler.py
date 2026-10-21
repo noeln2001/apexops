@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 from backend.app.core.config import settings
@@ -105,12 +105,12 @@ class CurrentSeasonReconciler:
                 endpoint_url=settings.JOLPICA_BASE_URL,
                 health_status="HEALTHY",
                 last_ping_ms=120.5,
-                last_success_at=datetime.utcnow()
+                last_success_at=datetime.now(timezone.utc)
             )
             self.db.add(source)
         else:
             source.health_status = "HEALTHY"
-            source.last_success_at = datetime.utcnow()
+            source.last_success_at = datetime.now(timezone.utc)
 
         self.db.commit()
         logger.info(f"Reconciliation complete: {validation_results}")

@@ -3,7 +3,7 @@ import shutil
 import time
 import psutil
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -20,37 +20,37 @@ class BackgroundJobRegistry:
             "name": "Live Telemetry & Intervals Worker",
             "interval_sec": 60,
             "status": "IDLE",
-            "last_run": datetime.utcnow().isoformat() + "Z",
+            "last_run": datetime.now(timezone.utc).isoformat(),
             "duration_sec": 1.2,
             "consecutive_failures": 0,
-            "next_run": (datetime.utcnow() + timedelta(seconds=60)).isoformat() + "Z"
+            "next_run": (datetime.now(timezone.utc) + timedelta(seconds=60)).isoformat()
         },
         "standings_reconciliation_worker": {
             "name": "Championship Standings Reconciler",
             "interval_sec": 300,
             "status": "IDLE",
-            "last_run": datetime.utcnow().isoformat() + "Z",
+            "last_run": datetime.now(timezone.utc).isoformat(),
             "duration_sec": 0.8,
             "consecutive_failures": 0,
-            "next_run": (datetime.utcnow() + timedelta(seconds=300)).isoformat() + "Z"
+            "next_run": (datetime.now(timezone.utc) + timedelta(seconds=300)).isoformat()
         },
         "provider_health_probe": {
             "name": "Upstream Data Source Health Probe",
             "interval_sec": 120,
             "status": "IDLE",
-            "last_run": datetime.utcnow().isoformat() + "Z",
+            "last_run": datetime.now(timezone.utc).isoformat(),
             "duration_sec": 0.4,
             "consecutive_failures": 0,
-            "next_run": (datetime.utcnow() + timedelta(seconds=120)).isoformat() + "Z"
+            "next_run": (datetime.now(timezone.utc) + timedelta(seconds=120)).isoformat()
         },
         "database_hot_backup_job": {
             "name": "Nightly Automated Snapshot & Restore Verifier",
             "interval_sec": 86400,
             "status": "IDLE",
-            "last_run": datetime.utcnow().isoformat() + "Z",
+            "last_run": datetime.now(timezone.utc).isoformat(),
             "duration_sec": 0.15,
             "consecutive_failures": 0,
-            "next_run": (datetime.utcnow() + timedelta(seconds=86400)).isoformat() + "Z"
+            "next_run": (datetime.now(timezone.utc) + timedelta(seconds=86400)).isoformat()
         }
     }
 
@@ -63,7 +63,7 @@ class BackgroundJobRegistry:
         if job_key in cls._jobs:
             job = cls._jobs[job_key]
             job["status"] = status
-            job["last_run"] = datetime.utcnow().isoformat() + "Z"
+            job["last_run"] = datetime.now(timezone.utc).isoformat()
             job["duration_sec"] = round(duration_sec, 3)
             if status == "FAILED":
                 job["consecutive_failures"] += 1
@@ -71,7 +71,7 @@ class BackgroundJobRegistry:
             else:
                 job["consecutive_failures"] = 0
                 job["last_error"] = None
-            job["next_run"] = (datetime.utcnow() + timedelta(seconds=job["interval_sec"])).isoformat() + "Z"
+            job["next_run"] = (datetime.now(timezone.utc) + timedelta(seconds=job["interval_sec"])).isoformat()
 
 class MetricsService:
     """Collects real system observability, latency percentiles, storage, and platform health."""
@@ -148,7 +148,12 @@ class MetricsService:
         is_stale = False
         stale_reason = None
         if last_success_run and last_success_run.completed_at:
-            age_hours = (datetime.utcnow() - last_success_run.completed_at).total_seconds() / 3600
+            # Handle naive or aware completed_at
+            now_dt = datetime.now(timezone.utc)
+            comp_dt = last_success_run.completed_at
+            if comp_dt.tzinfo is None:
+                comp_dt = comp_dt.replace(tzinfo=timezone.utc)
+            age_hours = (now_dt - comp_dt).total_seconds() / 3600
             # Race week threshold: Austin GP is in 3 days (October 23-25, 2026)
             if age_hours > 72:
                 is_stale = True
@@ -179,7 +184,7 @@ class MetricsService:
             "environment": settings.ENVIRONMENT,
             "reference_date": settings.REFERENCE_DATE,
             "status": overall_status,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "uptime_seconds": round(time.time() - process.create_time(), 1),
             "backend": {
                 "health": "UP",

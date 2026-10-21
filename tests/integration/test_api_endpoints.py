@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from backend.app.main import app
 
+from backend.app.core.config import settings
+
 client = TestClient(app)
 
 def test_health_endpoint():
@@ -9,7 +11,7 @@ def test_health_endpoint():
     assert res.status_code == 200
     data = res.json()
     assert data["status"] == "UP"
-    assert data["reference_date"] == "2026-10-20"
+    assert data["reference_date"] == settings.REFERENCE_DATE
 
 def test_overview_endpoint():
     res = client.get("/api/v1/overview?season=2026")

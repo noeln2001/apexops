@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.app.db.session import get_db
 from backend.app.models.governance import NewsArticle
 from data_engine.adapters.news_adapter import NewsAdapter
@@ -41,12 +41,12 @@ def list_news(
         for item in feed_items:
             existing = db.query(NewsArticle).filter(NewsArticle.url == item["url"]).first()
             if not existing:
-                pub_dt = datetime.utcnow()
+                pub_dt = datetime.now(timezone.utc)
                 if item.get("published_at"):
                     try:
                         pub_dt = datetime.fromisoformat(item["published_at"].replace("Z", "+00:00"))
                     except Exception:
-                        pub_dt = datetime.utcnow()
+                        pub_dt = datetime.now(timezone.utc)
 
                 article = NewsArticle(
                     headline=item["headline"],
@@ -89,7 +89,7 @@ def refresh_news(db: Session = Depends(get_db)):
                 headline=item["headline"],
                 publisher=item["publisher"],
                 url=item["url"],
-                published_at=datetime.utcnow(),
+                published_at=datetime.now(timezone.utc),
                 category=item.get("category", "Technical"),
                 confirmation_status=item.get("confirmation_status", "Officially Confirmed"),
                 reliability_score=item.get("reliability_score", 1.0),

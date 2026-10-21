@@ -4,7 +4,7 @@ import json
 import zipfile
 import urllib.request
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Query, Body, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -260,7 +260,7 @@ def download_manifest():
     manifest_data = {
         "platform": "ApexOps Motorsport Technology & Intelligence Platform",
         "module": "UHD Image Discovery & Quality Verification",
-        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "generated_at": datetime.now(timezone.utc).isoformat() + "Z",
         "total_verified": len(discovery_service.verified_candidates),
         "images": list(discovery_service.verified_candidates.values()),
         "sources_audited": SOURCE_COMPLIANCE_CATALOG
@@ -316,7 +316,7 @@ def export_images_zip(payload: ExportZipRequest):
 
         # Add manifest.json to root of ZIP
         manifest_content = {
-            "archive_generated_at": datetime.utcnow().isoformat() + "Z",
+            "archive_generated_at": datetime.now(timezone.utc).isoformat() + "Z",
             "total_images": len(manifest_items),
             "images": manifest_items
         }

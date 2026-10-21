@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.app.db.session import Base
 
 class Season(Base):
@@ -9,7 +9,7 @@ class Season(Base):
     championship_type = Column(String(50), default="FIA Formula One World Championship")
     regulations_summary = Column(Text, nullable=True)
     rounds_count = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     races = relationship("Race", back_populates="season_rel")
     driver_standings = relationship("DriverStanding", back_populates="season_rel")

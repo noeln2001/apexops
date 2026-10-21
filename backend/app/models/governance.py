@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, Text, DateTime
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.app.db.session import Base
 
 class NewsArticle(Base):
@@ -8,8 +8,8 @@ class NewsArticle(Base):
     headline = Column(String(255), nullable=False)
     publisher = Column(String(100), nullable=False)
     url = Column(String(500), nullable=False, unique=True)
-    published_at = Column(DateTime, default=datetime.utcnow)
-    fetched_at = Column(DateTime, default=datetime.utcnow)
+    published_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    fetched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     category = Column(String(50), default="Technical") # Technical, Driver Transfers, Regulations, Race Reports
     confirmation_status = Column(String(50), default="Officially Confirmed") # Officially Confirmed, Reported by Named Source, Paddock Rumour
     reliability_score = Column(Float, default=1.0) # 0.0 to 1.0
@@ -44,4 +44,4 @@ class Prediction(Base):
     projected_pole_driver_id = Column(String(50), nullable=False)
     projected_winner_prob = Column(Float, default=0.0)
     features_used = Column(String(255), default="Historical Pace, Qualifying Delta, Circuit Degradation")
-    simulated_at = Column(DateTime, default=datetime.utcnow)
+    simulated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

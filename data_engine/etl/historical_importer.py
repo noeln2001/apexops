@@ -1,6 +1,6 @@
 import time
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from backend.app.core.config import settings
@@ -279,7 +279,7 @@ class HistoricalImporter:
             status="SUCCESS",
             records_processed=len(calendar_races) + results_imported,
             duration_sec=duration,
-            completed_at=datetime.utcnow()
+            completed_at=datetime.now(timezone.utc)
         )
         self.db.add(ingest_run)
         self.db.commit()

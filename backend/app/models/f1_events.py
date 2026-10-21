@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, Text, DateTime, Index
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.app.db.session import Base
 
 class Race(Base):
@@ -14,7 +14,7 @@ class Race(Base):
     time_utc = Column(String(20), nullable=True)
     status = Column(String(30), default="Scheduled") # Scheduled, Confirmed, In progress, Completed, Postponed, Cancelled
     url = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     season_rel = relationship("Season", back_populates="races")
     circuit_rel = relationship("Circuit", back_populates="races")

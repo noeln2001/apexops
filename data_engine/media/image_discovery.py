@@ -6,7 +6,7 @@ import time
 import urllib.request
 import urllib.parse
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from data_engine.media.url_safety import is_safe_url, safe_download_bytes
 from data_engine.media.image_verifier import ImageQualityVerifier
@@ -243,7 +243,7 @@ class ImageDiscoveryService:
             "is_valid": verification.get("is_valid"),
             "metrics": verification.get("metrics"),
             "reasons": verification.get("reasons", []),
-            "verified_at": datetime.utcnow().isoformat() + "Z"
+            "verified_at": datetime.now(timezone.utc).isoformat()
         }
 
         self.verified_candidates[merged_candidate["id"]] = merged_candidate

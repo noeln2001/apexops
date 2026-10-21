@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Float, Boolean, Text, DateTime
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.app.db.session import Base
 
 class DataSource(Base):
@@ -10,7 +10,7 @@ class DataSource(Base):
     endpoint_url = Column(String(255), nullable=True)
     health_status = Column(String(20), default="HEALTHY") # HEALTHY, DEGRADED, DOWN
     last_ping_ms = Column(Float, default=0.0)
-    last_success_at = Column(DateTime, default=datetime.utcnow)
+    last_success_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     consecutive_failures = Column(Integer, default=0)
 
 class IngestionRun(Base):
@@ -22,7 +22,7 @@ class IngestionRun(Base):
     records_processed = Column(Integer, default=0)
     duration_sec = Column(Float, default=0.0)
     error_log = Column(Text, nullable=True)
-    started_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = Column(DateTime, nullable=True)
 
 class DataQualityIssue(Base):
@@ -33,7 +33,7 @@ class DataQualityIssue(Base):
     record_id = Column(String(100), nullable=False)
     issue_type = Column(String(50), nullable=False) # MISSING_FIELD, OUTLIER, DISCREPANCY, TIMEOUT
     description = Column(Text, nullable=False)
-    detected_at = Column(DateTime, default=datetime.utcnow)
+    detected_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     resolved = Column(Boolean, default=False)
 
 class AuditLog(Base):
@@ -43,7 +43,7 @@ class AuditLog(Base):
     action = Column(String(100), nullable=False) # e.g. "RUN_HISTORICAL_IMPORT", "TRIGGER_INCIDENT_DRILL"
     resource = Column(String(100), nullable=False)
     details_json = Column(Text, nullable=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class User(Base):
     __tablename__ = "users"
@@ -53,7 +53,7 @@ class User(Base):
     full_name = Column(String(100), nullable=True)
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class IncidentDrill(Base):
     __tablename__ = "incident_drills"

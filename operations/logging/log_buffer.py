@@ -2,7 +2,7 @@ import re
 import logging
 import time
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from threading import RLock
 
@@ -46,7 +46,7 @@ class InMemoryLogHandler(logging.Handler):
 
             entry = {
                 "id": f"{int(time.time() * 1000)}-{record.relativeCreated:.0f}",
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "level": record.levelname,
                 "logger": record.name,
                 "message": safe_msg,

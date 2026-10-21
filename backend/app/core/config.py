@@ -1,17 +1,20 @@
 import os
+from datetime import datetime, timezone
 from pathlib import Path
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="allow")
+
     PROJECT_NAME: str = "ApexOps — Motorsport Technology & Intelligence Platform"
     PROJECT_VERSION: str = "1.0.0"
     API_V1_PREFIX: str = "/api/v1"
     
-    # Environment & Reference date (20 October 2026)
+    # Environment & Reference date (defaults to today's date unless set in env)
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
-    REFERENCE_DATE: str = os.getenv("REFERENCE_DATE", "2026-10-20")
+    REFERENCE_DATE: str = os.getenv("REFERENCE_DATE", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
     
     # Database
     DATABASE_URL: str = os.getenv(
@@ -31,10 +34,6 @@ class Settings(BaseSettings):
     # Backups & Cache
     BACKUP_DIR: str = os.getenv("BACKUP_DIR", str(PROJECT_ROOT / "backups"))
     CACHE_DIR: str = os.getenv("CACHE_DIR", str(PROJECT_ROOT / "cache"))
-    
-    class Config:
-        env_file = ".env"
-        extra = "allow"
 
 settings = Settings()
 

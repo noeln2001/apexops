@@ -30,13 +30,49 @@ apexops_logger.setLevel(logging.INFO)
 if operational_log_handler not in apexops_logger.handlers:
     apexops_logger.addHandler(operational_log_handler)
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting ApexOps Engine...")
+    if operational_log_handler not in root_logger.handlers:
+        root_logger.addHandler(operational_log_handler)
+    if operational_log_handler not in apexops_logger.handlers:
+        apexops_logger.addHandler(operational_log_handler)
+    init_database()
+    
+    # Initialize default data sources if not present
+    db = SessionLocal()
+    try:
+        sources = [
+            {"name": "Jolpica", "type": "REST_API", "url": settings.JOLPICA_BASE_URL},
+            {"name": "OpenF1", "type": "REST_API", "url": settings.OPENF1_BASE_URL},
+            {"name": "FastF1", "type": "PYTHON_LIB", "url": "fastf1.local_cache"},
+            {"name": "FIA Official", "type": "RSS/PRESS", "url": "https://www.fia.com"}
+        ]
+        for s in sources:
+            if not db.query(DataSource).filter(DataSource.name == s["name"]).first():
+                db.add(DataSource(
+                    name=s["name"],
+                    type=s["type"],
+                    endpoint_url=s["url"],
+                    health_status="UNKNOWN",
+                    last_ping_ms=0.0
+                ))
+        db.commit()
+    except Exception as e:
+        logger.warning(f"Error seeding data sources on startup: {e}")
+    finally:
+        db.close()
+    yield
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.PROJECT_VERSION,
     description="Enterprise-grade Formula 1 Data, Analytics, Telemetry, and IT Operations Platform.",
     openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
-    docs_url=f"{settings.API_V1_PREFIX}/docs"
+    docs_url=f"{settings.API_V1_PREFIX}/docs",
+    lifespan=lifespan
 )
 
 # CORS configuration
@@ -85,39 +121,6 @@ async def add_process_time_and_correlation_id(request: Request, call_next):
             correlation_id=correlation_id,
             error_detail=error_detail
         )
-
-@app.on_event("startup")
-def startup_event():
-    logger.info("Starting ApexOps Engine...")
-    if operational_log_handler not in root_logger.handlers:
-        root_logger.addHandler(operational_log_handler)
-    if operational_log_handler not in apexops_logger.handlers:
-        apexops_logger.addHandler(operational_log_handler)
-    init_database()
-    
-    # Initialize default data sources if not present
-    db = SessionLocal()
-    try:
-        sources = [
-            {"name": "Jolpica", "type": "REST_API", "url": settings.JOLPICA_BASE_URL},
-            {"name": "OpenF1", "type": "REST_API", "url": settings.OPENF1_BASE_URL},
-            {"name": "FastF1", "type": "PYTHON_LIB", "url": "fastf1.local_cache"},
-            {"name": "FIA Official", "type": "RSS/PRESS", "url": "https://www.fia.com"}
-        ]
-        for s in sources:
-            if not db.query(DataSource).filter(DataSource.name == s["name"]).first():
-                db.add(DataSource(
-                    name=s["name"],
-                    type=s["type"],
-                    endpoint_url=s["url"],
-                    health_status="UNKNOWN",
-                    last_ping_ms=0.0
-                ))
-        db.commit()
-    except Exception as e:
-        logger.warning(f"Error seeding data sources on startup: {e}")
-    finally:
-        db.close()
 
 @app.get("/health", tags=["Health"])
 @app.get(f"{settings.API_V1_PREFIX}/health", tags=["Health"])

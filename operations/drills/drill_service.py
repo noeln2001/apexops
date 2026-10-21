@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 from backend.app.models.operations import IncidentDrill, AuditLog
@@ -127,9 +127,10 @@ class DrillService:
             return {"error": f"Drill {scenario_key} not found"}
         
         drill.status = "ACTIVE"
-        drill.injected_at = datetime.utcnow()
+        now_dt = datetime.now(timezone.utc)
+        drill.injected_at = now_dt
         drill.resolved_at = None
-        drill.logs_output += f"\n[{datetime.utcnow().strftime('%H:%M:%S')}] [SIMULATION] Drill {scenario_key} injected by trackside engineer."
+        drill.logs_output += f"\n[{now_dt.strftime('%H:%M:%S')}] [SIMULATION] Drill {scenario_key} injected by trackside engineer."
         
         db.add(AuditLog(
             user_email="trackside-ops",
@@ -146,9 +147,10 @@ class DrillService:
         if not drill:
             return {"error": f"Drill {scenario_key} not found"}
 
+        now_dt = datetime.now(timezone.utc)
         drill.status = "RESOLVED"
-        drill.resolved_at = datetime.utcnow()
-        drill.logs_output += f"\n[{datetime.utcnow().strftime('%H:%M:%S')}] [REMEDIATION] Operator executed playbook: {drill.remediation_steps} -> Health checks verified. Status: GREEN."
+        drill.resolved_at = now_dt
+        drill.logs_output += f"\n[{now_dt.strftime('%H:%M:%S')}] [REMEDIATION] Operator executed playbook: {drill.remediation_steps} -> Health checks verified. Status: GREEN."
         
         db.add(AuditLog(
             user_email="trackside-ops",

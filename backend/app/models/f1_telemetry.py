@@ -66,11 +66,13 @@ class TelemetrySample(Base):
         Index("idx_telem_session_driver_lap", "session_id", "driver_id", "lap_number"),
     )
 
+from datetime import datetime, timezone
+
 class WeatherSample(Base):
     __tablename__ = "weather_samples"
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(String(60), ForeignKey("sessions.session_id"), nullable=False, index=True)
-    timestamp_utc = Column(DateTime, default=datetime.utcnow)
+    timestamp_utc = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     air_temp_c = Column(Float, nullable=False)
     track_temp_c = Column(Float, nullable=False)
     humidity_pct = Column(Float, nullable=False)

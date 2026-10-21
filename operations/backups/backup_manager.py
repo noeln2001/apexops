@@ -6,7 +6,7 @@ import sqlite3
 import time
 import logging
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from backend.app.core.config import settings
 
@@ -50,7 +50,7 @@ class BackupManager:
         if not os.path.exists(db_file):
             return {"error": "Primary database file not found"}
 
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         backup_filename = f"apexops_backup_{timestamp}.db"
         dest_path = os.path.join(cls.get_backup_dir(), backup_filename)
 
@@ -73,7 +73,7 @@ class BackupManager:
                 "filename": backup_filename,
                 "filepath": dest_path,
                 "size_mb": round(size_bytes / (1024 * 1024), 2),
-                "created_at": datetime.utcnow().isoformat() + "Z",
+                "created_at": datetime.now(timezone.utc).isoformat() + "Z",
                 "duration_sec": duration,
                 "integrity_check": "PASS" if verified else "FAIL",
                 "note": note
@@ -139,7 +139,7 @@ class BackupManager:
             result = {
                 "status": "SUCCESS" if integ == "ok" else "FAILED",
                 "backup_tested": backup_filename,
-                "verified_at": datetime.utcnow().isoformat() + "Z",
+                "verified_at": datetime.now(timezone.utc).isoformat() + "Z",
                 "tables_verified": table_count,
                 "records_sample_races": race_count,
                 "integrity_result": integ,
