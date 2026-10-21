@@ -1,16 +1,21 @@
+import logging
+import os
 import time
 import uuid
-import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.core.config import settings
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
 from backend.app.api.v1.api import api_router
+from backend.app.core.config import settings
 from backend.app.db.init_db import init_database
 from backend.app.db.session import SessionLocal
 from backend.app.models.operations import DataSource
-
-from operations.monitoring.telemetry_collector import telemetry_collector
 from operations.logging.log_buffer import operational_log_handler
+from operations.monitoring.telemetry_collector import telemetry_collector
 
 # Configure structured logging
 logging.basicConfig(
@@ -30,7 +35,6 @@ apexops_logger.setLevel(logging.INFO)
 if operational_log_handler not in apexops_logger.handlers:
     apexops_logger.addHandler(operational_log_handler)
 
-from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -40,7 +44,7 @@ async def lifespan(app: FastAPI):
     if operational_log_handler not in apexops_logger.handlers:
         apexops_logger.addHandler(operational_log_handler)
     init_database()
-    
+
     # Initialize default data sources if not present
     db = SessionLocal()
     try:
@@ -91,18 +95,18 @@ async def add_process_time_and_correlation_id(request: Request, call_next):
     start_time = time.time()
     status_code = 500
     error_detail = None
-    
+
     try:
         response = await call_next(request)
         status_code = response.status_code
         process_time_ms = (time.time() - start_time) * 1000
         response.headers["X-Process-Time-Ms"] = f"{process_time_ms:.2f}"
         response.headers["X-Correlation-ID"] = correlation_id
-        
+
         # Exclude high-frequency health probes from flooding logs
         if not request.url.path.endswith("/health"):
             logger.info(f"{request.method} {request.url.path} [{response.status_code}] {process_time_ms:.1f}ms - CID: {correlation_id}")
-        
+
         return response
     except Exception as exc:
         status_code = 500
@@ -138,10 +142,6 @@ def health_check():
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 # Mount frontend production build if available
-import os
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-
 frontend_dist = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
 if os.path.exists(frontend_dist):
     assets_dir = os.path.join(frontend_dist, "assets")

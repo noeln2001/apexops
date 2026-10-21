@@ -1,13 +1,14 @@
 import logging
-from backend.app.db.session import SessionLocal
+
 from backend.app.db.init_db import init_database
-from data_engine.etl.historical_importer import HistoricalImporter
-from data_engine.etl.current_season_reconciler import CurrentSeasonReconciler
-from operations.drills.drill_service import DrillService
-from data_engine.adapters.news_adapter import NewsAdapter
+from backend.app.db.session import SessionLocal
+from backend.app.models.f1_core import Constructor, Driver
+from backend.app.models.f1_events import ConstructorStanding, DriverStanding
 from backend.app.models.governance import NewsArticle
-from backend.app.models.f1_core import Driver, Constructor
-from backend.app.models.f1_events import DriverStanding, ConstructorStanding
+from data_engine.adapters.news_adapter import NewsAdapter
+from data_engine.etl.current_season_reconciler import CurrentSeasonReconciler
+from data_engine.etl.historical_importer import HistoricalImporter
+from operations.drills.drill_service import DrillService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("apexops.seed")

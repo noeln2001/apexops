@@ -1,8 +1,8 @@
 import logging
 import xml.etree.ElementTree as ET
+from typing import Any, Dict, List
+
 import requests
-from datetime import datetime
-from typing import List, Dict, Any
 
 logger = logging.getLogger("apexops.adapter.news")
 
@@ -37,7 +37,7 @@ class NewsAdapter:
     def fetch_feed_items(self) -> List[Dict[str, Any]]:
         articles = []
         headers = {"User-Agent": "ApexOps-Intelligence/1.0"}
-        
+
         for feed in NEWS_FEEDS:
             try:
                 resp = requests.get(feed["url"], headers=headers, timeout=8)
@@ -52,7 +52,7 @@ class NewsAdapter:
                         # Strip HTML tags from description if present
                         import re
                         clean_desc = re.sub('<[^<]+?>', '', description).strip()[:280]
-                        
+
                         articles.append({
                             "headline": title.strip(),
                             "publisher": feed["publisher"],

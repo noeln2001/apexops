@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 # Official FIA Formula 1 World Championship Scoring Regulations (2026 Season)
 GRAND_PRIX_POINTS = {

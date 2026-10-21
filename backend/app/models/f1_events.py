@@ -1,7 +1,10 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Text, DateTime, Index
-from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Index, Integer, String
+from sqlalchemy.orm import relationship
+
 from backend.app.db.session import Base
+
 
 class Race(Base):
     __tablename__ = "races"

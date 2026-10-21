@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, Body, Query
-from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-from backend.app.db.session import get_db
-from backend.app.models.f1_core import Driver, Constructor
-from backend.app.models.f1_events import DriverStanding, Race
+from sqlalchemy.orm import Session
+
 from analytics.simulation.championship_simulator import ChampionshipSimulator
+from backend.app.db.session import get_db
+from backend.app.models.f1_core import Constructor, Driver
+from backend.app.models.f1_events import DriverStanding, Race
 
 router = APIRouter()
 

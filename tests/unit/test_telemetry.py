@@ -1,14 +1,14 @@
-import pytest
-from analytics.telemetry.telemetry_service import TelemetryService
 from analytics.strategy.strategy_service import StrategyService
+from analytics.telemetry.telemetry_service import TelemetryService
+
 
 def test_telemetry_distance_alignment():
     lap_a = TelemetryService.generate_synthetic_telemetry("Circuit of the Americas", "norris", 92.0)
     lap_b = TelemetryService.generate_synthetic_telemetry("Circuit of the Americas", "verstappen", 92.4)
-    
+
     assert len(lap_a) > 50
     assert len(lap_b) > 50
-    
+
     aligned = TelemetryService.align_telemetry_laps(lap_a, lap_b, num_points=100)
     assert "distance" in aligned
     assert len(aligned["distance"]) == 100

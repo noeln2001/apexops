@@ -1,6 +1,8 @@
 import math
+from typing import Any, Dict, List
+
 import numpy as np
-from typing import List, Dict, Any, Optional
+
 
 class TelemetryService:
     """Computes synchronized distance-aligned telemetry, speed deltas, and time differences."""
@@ -33,7 +35,7 @@ class TelemetryService:
 
         # Delta speed (km/h) and time delta approximation
         speed_delta = [round(a - b, 2) for a, b in zip(interp_speed_a, interp_speed_b)]
-        
+
         # Cumulative time delta (dt = ds / v)
         time_delta = [0.0]
         for i in range(1, len(common_dist)):
@@ -66,14 +68,14 @@ class TelemetryService:
         points = []
         track_len = 5063.0 if "Singapore" in circuit_name else 5513.0 # COTA Austin
         steps = 200
-        
+
         for i in range(steps):
             d = (i / steps) * track_len
             # Harmonic model approximating straights and braking corners
             angle = (i / steps) * 8 * math.pi
             base_speed = 210.0 + 80.0 * math.sin(angle) - 30.0 * math.cos(angle * 2)
             speed = max(65.0, min(335.0, base_speed))
-            
+
             # Throttle & Brake logic
             throttle = 100.0 if speed > 180 else max(0.0, (speed - 65.0) * 1.5)
             brake = (speed < 140.0 and math.sin(angle) < -0.3)

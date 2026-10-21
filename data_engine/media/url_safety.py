@@ -1,7 +1,8 @@
-import socket
 import ipaddress
+import socket
 import urllib.parse
-from typing import Tuple, Optional, Dict, Any, Union
+from typing import Dict, Optional, Tuple, Union
+
 import requests
 
 # Disallowed CGNAT range (RFC 6598)

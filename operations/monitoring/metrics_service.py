@@ -1,16 +1,18 @@
 import os
 import shutil
 import time
-import psutil
-import sqlite3
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, List
-from sqlalchemy.orm import Session
+from typing import Any, Dict, List
+
+import psutil
 from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 from backend.app.core.config import settings
-from backend.app.models.operations import DataSource, IngestionRun, DataQualityIssue, AuditLog
-from operations.monitoring.telemetry_collector import telemetry_collector
+from backend.app.models.operations import DataQualityIssue, DataSource, IngestionRun
 from operations.backups.backup_manager import BackupManager
+from operations.monitoring.telemetry_collector import telemetry_collector
+
 
 # Scheduled Background Job Tracker
 class BackgroundJobRegistry:
@@ -98,7 +100,6 @@ class MetricsService:
 
         # Detailed SQLite storage & table stats
         tables_count = 0
-        total_rows = 0
         journal_mode = "UNKNOWN"
         try:
             tbl_res = db.execute(text("SELECT count(*) FROM sqlite_master WHERE type='table';")).scalar()
@@ -163,7 +164,7 @@ class MetricsService:
             stale_reason = "No successful ingestion runs recorded in audit log."
 
         # Active quality issues
-        open_issues_count = db.query(DataQualityIssue).filter(DataQualityIssue.resolved == False).count()
+        open_issues_count = db.query(DataQualityIssue).filter(not DataQualityIssue.resolved).count()
 
         # Telemetry Percentiles & Request Stats
         telemetry_data = telemetry_collector.get_summary()

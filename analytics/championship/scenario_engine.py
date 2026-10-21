@@ -1,12 +1,7 @@
-from typing import List, Dict, Any, Optional
-from analytics.championship.scoring_rules import (
-    REMAINING_ROUNDS_2026,
-    GRAND_PRIX_POINTS,
-    SPRINT_POINTS,
-    get_gp_points,
-    get_sprint_points,
-    calculate_max_remaining_points
-)
+from typing import Any, Dict, List
+
+from analytics.championship.scoring_rules import REMAINING_ROUNDS_2026, calculate_max_remaining_points
+
 
 class TitleScenarioEngine:
     """
@@ -31,7 +26,7 @@ class TitleScenarioEngine:
 
         leader = standings[0]
         leader_id = leader["driver_id"]
-        is_target_leader = (target_driver["driver_id"] == leader_id)
+        (target_driver["driver_id"] == leader_id)
 
         target_start_pts = float(target_driver["current_points"])
         leader_start_pts = float(leader["current_points"])
@@ -56,7 +51,7 @@ class TitleScenarioEngine:
             "id": "maximum_clean_sweep",
             "title": f"{target_driver['name']} Clean Sweep — Wins All 6 Remaining GPs & 3 Sprints",
             "category": "BEST_CASE",
-            "description": f"Dominant run taking maximum available 180 points (6 Feature Wins + Fastest Laps + 3 Sprint Wins).",
+            "description": "Dominant run taking maximum available 180 points (6 Feature Wins + Fastest Laps + 3 Sprint Wins).",
             "target_starting_points": target_start_pts,
             "target_gained_points": max_possible_points_gain,
             "target_final_points": target_pts_scen1,
@@ -110,7 +105,6 @@ class TitleScenarioEngine:
         # SCENARIO 3: Leader DNF Shock in Austin — Target P1, Leader 0 pts
         # -------------------------------------------------------------
         target_austin_max = 34
-        leader_austin_dnf = 0
         net_swing_dnf = 34
         new_deficit_dnf = round(start_gap - net_swing_dnf, 1)
 
@@ -147,7 +141,7 @@ class TitleScenarioEngine:
             "id": "podium_grinder_p2",
             "title": f"Podium Grinder — {target_driver['name']} P2 in Every Session",
             "category": "CONSISTENCY",
-            "description": f"Target driver finishes runner-up in every remaining race and sprint without taking a win.",
+            "description": "Target driver finishes runner-up in every remaining race and sprint without taking a win.",
             "target_starting_points": target_start_pts,
             "target_gained_points": target_p2_gain,
             "target_final_points": target_p2_final,
@@ -167,8 +161,6 @@ class TitleScenarioEngine:
         # -------------------------------------------------------------
         # SCENARIO 5: Elimination Threat — Target Suffers DNF in Austin
         # -------------------------------------------------------------
-        target_dnf_gain = 0
-        leader_austin_win_gain = 34
         deficit_after_target_dnf = round(start_gap + 34, 1)
         remaining_after_austin = total_remaining_pts - 34 # 146 pts left
         is_eliminated_austin = (target_start_pts + remaining_after_austin) < (leader_start_pts + 34)

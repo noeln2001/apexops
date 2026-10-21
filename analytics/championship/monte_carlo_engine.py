@@ -1,14 +1,12 @@
-import random
 import math
+import random
 import time
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from analytics.championship.scoring_rules import (
     REMAINING_ROUNDS_2026,
-    GRAND_PRIX_POINTS,
-    SPRINT_POINTS,
-    get_gp_points,
-    get_sprint_points
 )
+
 
 class MonteCarloTitleEngine:
     """
@@ -31,7 +29,7 @@ class MonteCarloTitleEngine:
 
         start_time = time.time()
         drivers = [d["driver_id"] for d in current_standings]
-        
+
         # Calculate pace weights proportional to 2026 season performance
         driver_weights = {}
         for d in current_standings:
@@ -79,7 +77,7 @@ class MonteCarloTitleEngine:
                         tally[d_id] += gp_points_list[rank_idx]
                         if rank_idx == 0:
                             wins[d_id] += 1
-                    
+
                     # Award Fastest Lap to random driver in top 5
                     if gp_finishers:
                         fl_driver = random.choice(gp_finishers[:min(5, len(gp_finishers))])
@@ -123,12 +121,12 @@ class MonteCarloTitleEngine:
             for pos_idx, d_id in enumerate(ranked):
                 if pos_idx < 3:
                     top3_finishes[d_id] += 1
-                
+
                 final_pts = tally[d_id]
                 final_points_sum[d_id] += final_pts
                 final_points_sq_sum[d_id] += (final_pts ** 2)
                 final_positions_sum[d_id] += (pos_idx + 1)
-                
+
                 # Keep small sample of points for distribution plotting
                 if len(points_distribution[d_id]) < 100:
                     points_distribution[d_id].append(round(final_pts, 1))

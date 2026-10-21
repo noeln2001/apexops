@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
-from typing import List, Optional
+from sqlalchemy.orm import Session
+
 from backend.app.db.session import get_db
-from backend.app.models.f1_core import Driver, Constructor, DriverTeamAssignment
-from backend.app.models.f1_events import SessionResult, Race, DriverStanding
+from backend.app.models.f1_core import Constructor, Driver, DriverTeamAssignment
+from backend.app.models.f1_events import Race, SessionResult
 
 router = APIRouter()
 
@@ -24,16 +26,16 @@ def list_drivers(
             (func.lower(Driver.code).like(s)) |
             (func.lower(Driver.nationality).like(s))
         )
-    
+
     drivers = query.order_by(Driver.last_name).all()
     results = []
-    
+
     for d in drivers:
         # Find active or latest team
         assignment = db.query(DriverTeamAssignment).filter(
             DriverTeamAssignment.driver_id == d.driver_id
         ).order_by(DriverTeamAssignment.season_year.desc()).first()
-        
+
         team_name = "Independent"
         team_color = "#E10600"
         if assignment:

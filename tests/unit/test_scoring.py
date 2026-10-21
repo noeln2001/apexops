@@ -1,5 +1,5 @@
-import pytest
 from analytics.simulation.championship_simulator import ChampionshipSimulator
+
 
 def test_points_calculation_standard():
     assert ChampionshipSimulator.POINTS_SYSTEM[0] == 25

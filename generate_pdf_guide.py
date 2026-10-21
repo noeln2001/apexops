@@ -1,20 +1,10 @@
-import os
-import sys
-from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer,
-    Table,
-    TableStyle,
-    PageBreak,
-    KeepTogether,
-    HRFlowable
-)
 from reportlab.pdfgen import canvas
+from reportlab.platypus import HRFlowable, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
 
 class NumberedCanvas(canvas.Canvas):
     """Two-pass canvas for total page numbering in footer."""
@@ -40,13 +30,13 @@ class NumberedCanvas(canvas.Canvas):
         self.saveState()
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748b"))
-        
+
         # Header
         self.drawString(54, letter[1] - 36, "ApexOps — Motorsport Technology & Intelligence Platform | Complete User Guide")
         self.setStrokeColor(colors.HexColor("#1e293b"))
         self.setLineWidth(0.5)
         self.line(54, letter[1] - 42, letter[0] - 54, letter[1] - 42)
-        
+
         # Footer
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(letter[0] - 54, 30, page_str)
@@ -65,13 +55,13 @@ def create_guide_pdf(filename="ApexOps_Platform_User_Guide.pdf"):
     )
 
     styles = getSampleStyleSheet()
-    
+
     # Custom palette
     PRIMARY_RED = colors.HexColor("#e10600")
     DARK_BG = colors.HexColor("#0f172a")
     SLATE_TEXT = colors.HexColor("#334155")
     CODE_BG = colors.HexColor("#f1f5f9")
-    ACCENT_BLUE = colors.HexColor("#0284c7")
+    colors.HexColor("#0284c7")
 
     # Custom styles
     title_style = ParagraphStyle(
@@ -84,7 +74,7 @@ def create_guide_pdf(filename="ApexOps_Platform_User_Guide.pdf"):
         alignment=0,
         spaceAfter=10
     )
-    
+
     subtitle_style = ParagraphStyle(
         'CoverSubtitle',
         parent=styles['Normal'],
@@ -237,7 +227,7 @@ def create_guide_pdf(filename="ApexOps_Platform_User_Guide.pdf"):
         "focusing especially on <b>Max Verstappen</b> and his realistic pathways to the Drivers' World Championship.",
         body_style
     ))
-    
+
     elements.append(Paragraph("Mathematical Framework for Remaining Points", h2_style))
     elements.append(Paragraph(
         "At any point in the season, the maximum points available to any driver are calculated deterministically:",
@@ -314,7 +304,7 @@ def create_guide_pdf(filename="ApexOps_Platform_User_Guide.pdf"):
                               "compared to interior pixels to detect overcompression artifacts.", bullet_style))
 
     elements.append(Paragraph("Quality Classification Levels", h2_style))
-    
+
     qc_data = [
         [Paragraph("<b>Classification</b>", body_style), Paragraph("<b>Criteria & Computer Vision Thresholds</b>", body_style), Paragraph("<b>Action</b>", body_style)],
         [Paragraph("<font color='#10b981'><b>EXCELLENT</b></font>", body_style), Paragraph("Genuine UHD (3840×2160+), Laplacian &ge; 110.0, no upscaling, clean DCT.", body_style), Paragraph("Primary gallery recommendation.", body_style)],
@@ -418,7 +408,7 @@ def create_guide_pdf(filename="ApexOps_Platform_User_Guide.pdf"):
     # -------------------------------------------------------------
     elements.append(Paragraph("7. REST API Endpoints Specification", h1_style))
     elements.append(HRFlowable(width="100%", thickness=1, color=PRIMARY_RED, spaceAfter=8))
-    
+
     api_data = [
         [Paragraph("<b>Route</b>", body_style), Paragraph("<b>Method</b>", body_style), Paragraph("<b>Functional Description</b>", body_style)],
         [Paragraph("`/api/v1/championship/tracker`", code_style), Paragraph("GET", body_style), Paragraph("Max Verstappen title clinch points gap & schedule.", body_style)],

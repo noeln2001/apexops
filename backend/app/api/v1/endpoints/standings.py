@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+
 from backend.app.db.session import get_db
-from backend.app.models.f1_core import Season, Driver, Constructor
-from backend.app.models.f1_events import DriverStanding, ConstructorStanding, Race, SessionResult
+from backend.app.models.f1_core import Constructor, Driver
+from backend.app.models.f1_events import ConstructorStanding, DriverStanding, Race, SessionResult
 
 router = APIRouter()
 
@@ -42,7 +44,7 @@ def get_driver_standings(
     query = db.query(DriverStanding).filter(DriverStanding.season_year == year)
     if round_num is not None:
         query = query.filter(DriverStanding.round == round_num)
-    
+
     standings = query.order_by(DriverStanding.position).all()
     if not standings:
         standings = db.query(DriverStanding).filter(DriverStanding.season_year == year).order_by(DriverStanding.position).all()
@@ -80,7 +82,7 @@ def get_driver_standings(
     for idx, ds in enumerate(standings):
         d = db.query(Driver).filter(Driver.driver_id == ds.driver_id).first()
         c = db.query(Constructor).filter(Constructor.constructor_id == ds.constructor_id).first() if ds.constructor_id else None
-        
+
         # Calculate podiums from session_results
         podiums = db.query(SessionResult).join(Race).filter(
             Race.season_year == year,

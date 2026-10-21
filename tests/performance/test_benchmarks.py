@@ -1,8 +1,11 @@
-import time
 import statistics
+import time
+
 import numpy as np
 from fastapi.testclient import TestClient
+
 from backend.app.main import app
+
 
 def run_performance_benchmark(iterations: int = 50):
     client = TestClient(app)
@@ -18,14 +21,14 @@ def run_performance_benchmark(iterations: int = 50):
     ]
 
     benchmark_results = {}
-    print(f"\n================ APEXOPS PERFORMANCE BENCHMARK SUITE ================")
+    print("\n================ APEXOPS PERFORMANCE BENCHMARK SUITE ================")
     print(f"Executing {iterations} sequential requests per endpoint...\n")
 
     for ep in endpoints:
         latencies = []
         errors = 0
         t_start_total = time.time()
-        
+
         for _ in range(iterations):
             t0 = time.time()
             resp = client.get(ep)

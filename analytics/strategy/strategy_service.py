@@ -1,5 +1,5 @@
-import numpy as np
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 
 class StrategyService:
     """Analyzes tyre compound degradation, pit windows, and undercut/overcut strategy."""
@@ -23,7 +23,7 @@ class StrategyService:
             # Non-linear tyre cliff effect after optimal life
             cliff_factor = 1.0 if lap <= comp_info["optimal_laps"] else 1.0 + 0.15 * (lap - comp_info["optimal_laps"])
             tyre_wear = comp_info["deg_per_lap"] * lap * cliff_factor
-            
+
             lap_time = base_lap_sec + comp_info["base_delta"] + tyre_wear + fuel_correction
             pace_data.append({
                 "lap": lap,
@@ -35,10 +35,10 @@ class StrategyService:
 
     @classmethod
     def evaluate_undercut_window(
-        cls, 
-        current_gap_sec: float, 
-        lead_car_compound: str, 
-        chase_car_compound: str, 
+        cls,
+        current_gap_sec: float,
+        lead_car_compound: str,
+        chase_car_compound: str,
         pit_loss_sec: float = 21.5,
         tyre_age_diff_laps: int = 15
     ) -> Dict[str, Any]:

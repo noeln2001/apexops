@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List
+
 from data_engine.adapters.jolpica_adapter import JolpicaAdapter
 
 logger = logging.getLogger("apexops.historical")

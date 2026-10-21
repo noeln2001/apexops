@@ -1,5 +1,5 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from backend.app.main import app
 
 client = TestClient(app)
@@ -79,7 +79,7 @@ def test_championship_history_no_fake_data_fallback(monkeypatch):
     from data_engine.historical.historical_service import HistoricalStatsService
     # Simulate full standings being unavailable for 2013 (offline/unreachable)
     monkeypatch.setattr(HistoricalStatsService, "get_season_standings", classmethod(lambda cls, yr: []))
-    
+
     response = client.get("/api/v1/championship/history/2013")
     assert response.status_code == 200
     data = response.json()

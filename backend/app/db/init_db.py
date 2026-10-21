@@ -1,6 +1,6 @@
 import logging
-from backend.app.db.session import engine, Base
-import backend.app.models # register models
+
+from backend.app.db.session import Base, engine
 
 logger = logging.getLogger("apexops.db")
 

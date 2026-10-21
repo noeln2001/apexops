@@ -1,6 +1,9 @@
-from sqlalchemy import Column, String, Integer, Float, Boolean, Text, DateTime
 from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text
+
 from backend.app.db.session import Base
+
 
 class DataSource(Base):
     __tablename__ = "data_sources"

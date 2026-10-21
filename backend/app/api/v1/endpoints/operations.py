@@ -1,16 +1,18 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import text
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 from backend.app.db.session import get_db
-from operations.monitoring.metrics_service import MetricsService, BackgroundJobRegistry
-from operations.monitoring.telemetry_collector import telemetry_collector
-from operations.logging.log_buffer import operational_log_handler
-from operations.drills.drill_service import DrillService
-from operations.backups.backup_manager import BackupManager
-from data_engine.etl.historical_importer import HistoricalImporter
 from data_engine.etl.current_season_reconciler import CurrentSeasonReconciler
+from data_engine.etl.historical_importer import HistoricalImporter
+from operations.backups.backup_manager import BackupManager
+from operations.drills.drill_service import DrillService
+from operations.logging.log_buffer import operational_log_handler
+from operations.monitoring.metrics_service import BackgroundJobRegistry, MetricsService
+from operations.monitoring.telemetry_collector import telemetry_collector
 
 router = APIRouter()
 

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from backend.app.db.session import get_db
+
 from backend.app.core.config import settings
-from backend.app.models.f1_core import Season, Driver, Constructor
-from backend.app.models.f1_events import Race, DriverStanding, ConstructorStanding, SessionResult
-from backend.app.models.operations import DataSource
+from backend.app.db.session import get_db
+from backend.app.models.f1_core import Constructor, Driver, Season
+from backend.app.models.f1_events import ConstructorStanding, DriverStanding, Race, SessionResult
 from backend.app.models.governance import NewsArticle
+from backend.app.models.operations import DataSource
 
 router = APIRouter()
 
@@ -16,10 +17,10 @@ def get_overview_dashboard(
 ):
     """Aggregates all key data cards for the Overview Dashboard."""
     ref_date = settings.REFERENCE_DATE # "2026-10-20"
-    
+
     # Season info
-    season_rec = db.query(Season).filter(Season.year == season).first()
-    
+    db.query(Season).filter(Season.year == season).first()
+
     # Upcoming race (first race with date >= ref_date)
     upcoming_race = db.query(Race).filter(
         Race.season_year == season,

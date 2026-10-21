@@ -1,10 +1,10 @@
-import re
 import logging
+import re
 import time
 from collections import deque
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
 from threading import RLock
+from typing import Any, Dict, List, Optional
 
 # Regex patterns to redact sensitive credentials, tokens, and authorization headers
 SENSITIVE_PATTERNS = [
@@ -36,7 +36,7 @@ class InMemoryLogHandler(logging.Handler):
         try:
             msg = self.format(record)
             safe_msg = redact_sensitive_data(msg)
-            
+
             # Extract correlation ID if present in the message or record
             correlation_id = getattr(record, "correlation_id", None)
             if not correlation_id:

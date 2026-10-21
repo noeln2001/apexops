@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
-from backend.app.db.session import get_db
-from backend.app.core.config import settings
-from analytics.championship.scoring_rules import REMAINING_ROUNDS_2026, calculate_max_remaining_points
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from analytics.championship.comparison_engine import DriverComparisonEngine
 from analytics.championship.eligibility_engine import ChampionshipEligibilityEngine
-from analytics.championship.scenario_engine import TitleScenarioEngine
 from analytics.championship.interactive_simulator import InteractiveChampionshipSimulator
 from analytics.championship.monte_carlo_engine import MonteCarloTitleEngine
-from analytics.championship.comparison_engine import DriverComparisonEngine
+from analytics.championship.scenario_engine import TitleScenarioEngine
+from analytics.championship.scoring_rules import REMAINING_ROUNDS_2026
+from backend.app.core.config import settings
+from backend.app.db.session import get_db
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ class MonteCarloPayload(BaseModel):
 def _load_live_standings(db: Session, season: int = 2026) -> List[Dict[str, Any]]:
     """Loads validated current standings joined with driver and constructor metadata."""
     query = text("""
-        SELECT 
+        SELECT
             ds.position,
             ds.driver_id,
             d.code,
@@ -44,7 +45,7 @@ def _load_live_standings(db: Session, season: int = 2026) -> List[Dict[str, Any]
         ORDER BY ds.position ASC;
     """)
     rows = db.execute(query, {"season": season}).fetchall()
-    
+
     standings = []
     for r in rows:
         standings.append({
@@ -169,7 +170,7 @@ def get_historical_champions_list():
 @router.get("/championship/history/{season}")
 def get_historical_season_championship(season: int, db: Session = Depends(get_db)):
     """Returns official historical standings and title winner for past seasons (2010–2025)."""
-    from data_engine.historical.historical_service import HistoricalStatsService, HISTORICAL_CHAMPIONS
+    from data_engine.historical.historical_service import HISTORICAL_CHAMPIONS, HistoricalStatsService
 
     if season < 2010 or season > 2026:
         raise HTTPException(status_code=400, detail="Historical records available from 2010 to 2026.")
@@ -178,7 +179,7 @@ def get_historical_season_championship(season: int, db: Session = Depends(get_db
 
     # Check database first
     query = text("""
-        SELECT 
+        SELECT
             ds.position,
             ds.driver_id,
             d.first_name || ' ' || d.last_name AS name,

@@ -1,8 +1,10 @@
 import logging
 from datetime import datetime, timezone
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from sqlalchemy.orm import Session
-from backend.app.models.operations import IncidentDrill, AuditLog
+
+from backend.app.models.operations import AuditLog, IncidentDrill
 
 logger = logging.getLogger("apexops.drills")
 
@@ -125,13 +127,13 @@ class DrillService:
         drill = db.query(IncidentDrill).filter(IncidentDrill.scenario_key == scenario_key).first()
         if not drill:
             return {"error": f"Drill {scenario_key} not found"}
-        
+
         drill.status = "ACTIVE"
         now_dt = datetime.now(timezone.utc)
         drill.injected_at = now_dt
         drill.resolved_at = None
         drill.logs_output += f"\n[{now_dt.strftime('%H:%M:%S')}] [SIMULATION] Drill {scenario_key} injected by trackside engineer."
-        
+
         db.add(AuditLog(
             user_email="trackside-ops",
             action="TRIGGER_INCIDENT_DRILL",
@@ -151,7 +153,7 @@ class DrillService:
         drill.status = "RESOLVED"
         drill.resolved_at = now_dt
         drill.logs_output += f"\n[{now_dt.strftime('%H:%M:%S')}] [REMEDIATION] Operator executed playbook: {drill.remediation_steps} -> Health checks verified. Status: GREEN."
-        
+
         db.add(AuditLog(
             user_email="trackside-ops",
             action="RESOLVE_INCIDENT_DRILL",

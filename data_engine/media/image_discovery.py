@@ -1,15 +1,14 @@
+import json
 import os
 import re
-import io
-import json
 import time
-import urllib.request
 import urllib.parse
-from typing import List, Dict, Any, Optional
+import urllib.request
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-from data_engine.media.url_safety import is_safe_url, safe_download_bytes
 from data_engine.media.image_verifier import ImageQualityVerifier
+from data_engine.media.url_safety import is_safe_url, safe_download_bytes
 
 USER_AGENT = "ApexOpsF1Analytics/1.0 (https://apexops.internal; educational open-data motorsport research)"
 
@@ -221,7 +220,7 @@ class ImageDiscoveryService:
 
         # 3. Computer Vision Verification
         verification = ImageQualityVerifier.verify_image_bytes(
-            raw_bytes, 
+            raw_bytes,
             filename=candidate_info.get("title", "f1_image"),
             config=config
         )

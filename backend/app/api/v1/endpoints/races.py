@@ -1,12 +1,12 @@
+from datetime import datetime, timedelta
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
-import pytz
-from typing import List, Optional
+
 from backend.app.db.session import get_db
-from backend.app.core.config import settings
-from backend.app.models.f1_core import Circuit, Driver, Constructor
-from backend.app.models.f1_events import Race, Session as F1Session, SessionResult, QualifyingResult, SprintResult
+from backend.app.models.f1_core import Constructor, Driver
+from backend.app.models.f1_events import Race, SessionResult
 
 router = APIRouter()
 
@@ -33,7 +33,7 @@ def list_races(
     query = db.query(Race).filter(Race.season_year == season)
     if status:
         query = query.filter(Race.status == status)
-    
+
     races = query.order_by(Race.round).all()
     results = []
 
@@ -63,7 +63,7 @@ def get_race_details(race_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Race '{race_id}' not found")
 
     circuit = race.circuit_rel
-    
+
     # Generate standard weekend session schedule
     schedule = [
         {"session": "Practice 1", "day": "Friday", "utc": "15:30 UTC", "ist": "Friday 21:00 IST"},
@@ -105,7 +105,7 @@ def get_race_results(race_id: str, db: Session = Depends(get_db)):
     for r in results:
         d = db.query(Driver).filter(Driver.driver_id == r.driver_id).first()
         c = db.query(Constructor).filter(Constructor.constructor_id == r.constructor_id).first()
-        
+
         classifications.append({
             "position": r.position,
             "position_text": r.position_text,

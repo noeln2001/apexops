@@ -1,6 +1,9 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Text, DateTime
 from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
+
 from backend.app.db.session import Base
+
 
 class NewsArticle(Base):
     __tablename__ = "news_articles"

@@ -1,9 +1,10 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+
 from backend.app.db.session import get_db
-from backend.app.models.f1_core import Constructor, DriverTeamAssignment, Driver
-from backend.app.models.f1_events import SessionResult, Race, ConstructorStanding
+from backend.app.models.f1_core import Constructor, Driver, DriverTeamAssignment
+from backend.app.models.f1_events import ConstructorStanding, Race, SessionResult
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ def list_constructors(db: Session = Depends(get_db)):
         assignments = db.query(DriverTeamAssignment, Driver).join(Driver).filter(
             DriverTeamAssignment.constructor_id == t.constructor_id
         ).order_by(DriverTeamAssignment.season_year.desc()).limit(2).all()
-        
+
         drivers_lineup = [f"{d.first_name} {d.last_name}" for _, d in assignments]
 
         # Total wins

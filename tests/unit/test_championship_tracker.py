@@ -1,15 +1,15 @@
-import pytest
-from analytics.championship.scoring_rules import (
-    get_gp_points,
-    get_sprint_points,
-    calculate_max_remaining_points,
-    compare_countback,
-    REMAINING_ROUNDS_2026
-)
 from analytics.championship.eligibility_engine import ChampionshipEligibilityEngine
-from analytics.championship.scenario_engine import TitleScenarioEngine
 from analytics.championship.interactive_simulator import InteractiveChampionshipSimulator
 from analytics.championship.monte_carlo_engine import MonteCarloTitleEngine
+from analytics.championship.scenario_engine import TitleScenarioEngine
+from analytics.championship.scoring_rules import (
+    REMAINING_ROUNDS_2026,
+    calculate_max_remaining_points,
+    compare_countback,
+    get_gp_points,
+    get_sprint_points,
+)
+
 
 def test_gp_points_standard():
     assert get_gp_points(1) == 25
@@ -64,7 +64,7 @@ def test_mathematical_eligibility_and_elimination():
     ]
 
     processed = ChampionshipEligibilityEngine.calculate_eligibility(sample_standings)
-    
+
     # Leader
     assert processed[0]["status"] == "CONTENDER"
     assert processed[0]["is_contender"] is True
@@ -116,7 +116,7 @@ def test_interactive_simulator_presets():
     ]
     selections = InteractiveChampionshipSimulator.get_preset_scenario("max_wins_austin", "max_verstappen", "antonelli")
     sim_res = InteractiveChampionshipSimulator.apply_simulation(sample_standings, selections)
-    
+
     assert sim_res["status"] == "SIMULATED"
     # Verstappen gained 25 (GP) + 8 (Sprint) + 1 (FL) = 34 pts
     ver_proj = next(d for d in sim_res["projected_standings"] if d["driver_id"] == "max_verstappen")

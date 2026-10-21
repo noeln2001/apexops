@@ -1,12 +1,7 @@
-from typing import List, Dict, Any, Optional
-from analytics.championship.scoring_rules import (
-    REMAINING_ROUNDS_2026,
-    GRAND_PRIX_POINTS,
-    SPRINT_POINTS,
-    get_gp_points,
-    get_sprint_points,
-    compare_countback
-)
+from typing import Any, Dict, List
+
+from analytics.championship.scoring_rules import REMAINING_ROUNDS_2026, get_gp_points, get_sprint_points
+
 
 class InteractiveChampionshipSimulator:
     """
@@ -120,7 +115,7 @@ class InteractiveChampionshipSimulator:
     def get_preset_scenario(cls, preset_key: str, target_driver_id: str = "max_verstappen", leader_id: str = "antonelli") -> Dict[str, Any]:
         """Returns pre-filled finishing order maps for instant interactive buttons."""
         selections = {}
-        
+
         if preset_key == "max_wins_austin":
             # Round 18 Sprint & GP
             selections["round_18_gp"] = {target_driver_id: 1, leader_id: 4, "norris": 2, "russell": 3, "hamilton": 5}

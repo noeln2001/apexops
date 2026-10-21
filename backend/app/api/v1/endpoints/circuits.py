@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from backend.app.db.session import get_db
-from backend.app.models.f1_core import Circuit, CircuitLayout, Driver
+from backend.app.models.f1_core import Circuit, Driver
 from backend.app.models.f1_events import Race, SessionResult
 
 router = APIRouter()

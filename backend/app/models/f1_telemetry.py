@@ -1,7 +1,9 @@
-from sqlalchemy import Column, String, Integer, Float, Boolean, ForeignKey, Index, DateTime
-from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String
+
 from backend.app.db.session import Base
+
 
 class LapTime(Base):
     __tablename__ = "lap_times"
@@ -66,7 +68,8 @@ class TelemetrySample(Base):
         Index("idx_telem_session_driver_lap", "session_id", "driver_id", "lap_number"),
     )
 
-from datetime import datetime, timezone
+
+
 
 class WeatherSample(Base):
     __tablename__ = "weather_samples"

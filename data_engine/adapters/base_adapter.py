@@ -1,13 +1,14 @@
-import time
 import logging
+import time
+from typing import Any, Dict, Optional
+
 import requests
-from typing import Optional, Dict, Any
 
 logger = logging.getLogger("apexops.adapter")
 
 class BaseProviderAdapter:
     """Base class for all ApexOps data providers with retries, timeout, and metrics."""
-    
+
     def __init__(self, name: str, base_url: str, timeout_sec: int = 10, max_retries: int = 3):
         self.name = name
         self.base_url = base_url.rstrip("/")
@@ -27,7 +28,7 @@ class BaseProviderAdapter:
                 start_time = time.time()
                 resp = self.session.get(url, params=params, timeout=self.timeout_sec)
                 duration_ms = (time.time() - start_time) * 1000
-                
+
                 if resp.status_code == 200:
                     logger.debug(f"[{self.name}] GET {url} SUCCESS ({duration_ms:.1f}ms)")
                     return resp.json()

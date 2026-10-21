@@ -1,8 +1,9 @@
-import time
 import math
+import time
 from collections import deque
-from typing import Dict, Any, List, Optional
 from threading import Lock, RLock
+from typing import Any, Dict, Optional
+
 
 class APITelemetryCollector:
     """

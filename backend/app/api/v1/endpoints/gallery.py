@@ -1,16 +1,15 @@
-import os
 import io
 import json
-import zipfile
 import urllib.request
-from typing import List, Optional, Dict, Any
+import zipfile
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Query, Body, Response
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from data_engine.media.image_discovery import ImageDiscoveryService, SOURCE_COMPLIANCE_CATALOG
-from data_engine.media.image_verifier import ImageQualityVerifier
+from data_engine.media.image_discovery import SOURCE_COMPLIANCE_CATALOG, ImageDiscoveryService
 from data_engine.media.url_safety import is_safe_url
 
 router = APIRouter(prefix="/gallery")

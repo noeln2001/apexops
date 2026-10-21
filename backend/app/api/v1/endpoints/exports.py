@@ -1,11 +1,13 @@
-import io
 import csv
-from fastapi import APIRouter, Depends, Query, HTTPException
-from fastapi.responses import Response, StreamingResponse
+import io
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
+
 from backend.app.db.session import get_db
-from backend.app.models.f1_events import SessionResult, Race, DriverStanding
-from backend.app.models.f1_core import Driver, Constructor
+from backend.app.models.f1_core import Constructor, Driver
+from backend.app.models.f1_events import DriverStanding, Race
 
 router = APIRouter()
 
@@ -56,7 +58,7 @@ def export_dataset(
             writer = csv.DictWriter(output, fieldnames=rows[0].keys())
             writer.writeheader()
             writer.writerows(rows)
-        
+
         return Response(
             content=output.getvalue(),
             media_type="text/csv",

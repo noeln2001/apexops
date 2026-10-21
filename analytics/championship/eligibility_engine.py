@@ -1,10 +1,7 @@
-from typing import List, Dict, Any, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from analytics.championship.scoring_rules import (
-    REMAINING_ROUNDS_2026,
-    calculate_max_remaining_points
-)
+from typing import Any, Dict, List
+
+from analytics.championship.scoring_rules import REMAINING_ROUNDS_2026, calculate_max_remaining_points
+
 
 class ChampionshipEligibilityEngine:
     """
@@ -25,9 +22,9 @@ class ChampionshipEligibilityEngine:
             return []
 
         max_available_pts = calculate_max_remaining_points(remaining_rounds, include_fastest_lap=True)
-        max_race_pts_no_fl = calculate_max_remaining_points(remaining_rounds, include_fastest_lap=False)
-        remaining_races_count = len(remaining_rounds)
-        remaining_sprints_count = sum(1 for r in remaining_rounds if r.get("has_sprint", False))
+        calculate_max_remaining_points(remaining_rounds, include_fastest_lap=False)
+        len(remaining_rounds)
+        sum(1 for r in remaining_rounds if r.get("has_sprint", False))
 
         leader = standings[0]
         leader_pts = float(leader.get("current_points", leader.get("points", 0.0)))
@@ -104,7 +101,7 @@ class ChampionshipEligibilityEngine:
         """Provides high-level title battle summary metrics."""
         contenders = [d for d in processed_standings if d["is_contender"]]
         eliminated = [d for d in processed_standings if d["is_eliminated"]]
-        
+
         remaining_pts = calculate_max_remaining_points(REMAINING_ROUNDS_2026, include_fastest_lap=True)
 
         return {

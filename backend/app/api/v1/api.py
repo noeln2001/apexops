@@ -1,19 +1,20 @@
 from fastapi import APIRouter
+
 from backend.app.api.v1.endpoints import (
-    overview,
-    standings,
-    drivers,
-    constructors,
-    circuits,
-    races,
-    telemetry,
-    strategy,
-    simulations,
     championship,
+    circuits,
+    constructors,
+    drivers,
+    exports,
+    gallery,
     news,
     operations,
-    exports,
-    gallery
+    overview,
+    races,
+    simulations,
+    standings,
+    strategy,
+    telemetry,
 )
 
 api_router = APIRouter()

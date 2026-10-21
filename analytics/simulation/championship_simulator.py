@@ -1,5 +1,6 @@
 import random
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 
 class ChampionshipSimulator:
     """Simulates Formula 1 championship outcomes using deterministic scenarios and Monte Carlo methods."""
@@ -14,8 +15,8 @@ class ChampionshipSimulator:
 
     @classmethod
     def run_deterministic_scenario(
-        cls, 
-        current_standings: List[Dict[str, Any]], 
+        cls,
+        current_standings: List[Dict[str, Any]],
         scenarios: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
@@ -55,9 +56,9 @@ class ChampionshipSimulator:
 
     @classmethod
     def run_monte_carlo(
-        cls, 
-        current_standings: List[Dict[str, Any]], 
-        remaining_races: int = 6, 
+        cls,
+        current_standings: List[Dict[str, Any]],
+        remaining_races: int = 6,
         remaining_sprints: int = 2,
         iterations: int = 1000
     ) -> Dict[str, Any]:
@@ -83,7 +84,7 @@ class ChampionshipSimulator:
                 # 6% baseline probability of mechanical/collision retirement per driver
                 participating = [d for d in drivers if random.random() > 0.06]
                 weights = [norm_weights[d] for d in participating]
-                
+
                 # Weighted sample for top 10 finishers without replacement
                 try:
                     finishers = []

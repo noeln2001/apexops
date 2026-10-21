@@ -1,10 +1,11 @@
-import io
-import math
 import hashlib
-from typing import Dict, Any, Tuple, Optional
+import io
+from typing import Any, Dict, Optional
+
+import cv2
 import numpy as np
 from PIL import Image
-import cv2
+
 
 class ImageQualityVerifier:
     """
@@ -29,8 +30,8 @@ class ImageQualityVerifier:
 
     @classmethod
     def verify_image_bytes(
-        cls, 
-        image_bytes: bytes, 
+        cls,
+        image_bytes: bytes,
         filename: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
@@ -60,7 +61,7 @@ class ImageQualityVerifier:
             pil_format = pil_img.format or "JPEG"
             width, height = pil_img.size
             mode = pil_img.mode
-            
+
             # Convert to RGB if needed
             if mode != "RGB":
                 pil_img = pil_img.convert("RGB")
@@ -98,7 +99,7 @@ class ImageQualityVerifier:
 
         # 6. Computer Vision Clarity & Sharpness Assessment
         gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        
+
         # Laplacian variance (standard measure of focus and edge sharpness)
         laplacian = cv2.Laplacian(gray, cv2.CV_64F)
         sharpness_score = round(float(laplacian.var()), 1)
@@ -113,12 +114,12 @@ class ImageQualityVerifier:
         f_transform = np.fft.fft2(gray)
         f_shift = np.fft.fftshift(f_transform)
         magnitude_spectrum = 20 * np.log(np.abs(f_shift) + 1e-9)
-        
+
         h_mid, w_mid = gray.shape[0] // 2, gray.shape[1] // 2
         y_coords, x_coords = np.ogrid[:gray.shape[0], :gray.shape[1]]
         dist_from_center = np.sqrt((x_coords - w_mid)**2 + (y_coords - h_mid)**2)
         high_freq_mask = dist_from_center > (min(h_mid, w_mid) * 0.4)
-        
+
         high_freq_mean = float(np.mean(magnitude_spectrum[high_freq_mask])) if np.any(high_freq_mask) else 0.0
         # If high resolution but very low high-frequency content, it is artificially upscaled
         is_upscaled = (high_freq_mean < cfg["min_high_freq_spectral"]) and (sharpness_score < 40.0)
@@ -131,7 +132,7 @@ class ImageQualityVerifier:
             len_h = min(row_8.shape[0], row_9.shape[0])
             if len_h > 0:
                 diff_h = np.abs(row_8[:len_h, :] - row_9[:len_h, :])
-                
+
                 row_4 = gray[4::8, :]
                 row_5 = gray[5::8, :]
                 len_non = min(row_4.shape[0], row_5.shape[0])

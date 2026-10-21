@@ -1,14 +1,15 @@
-import os
 import logging
-from typing import Dict, Any, List, Optional
+import os
+from typing import Any, Dict, List, Optional
+
 import pandas as pd
+
 from backend.app.core.config import settings
 
 logger = logging.getLogger("apexops.adapter.fastf1")
 
 try:
     import fastf1
-    from fastf1 import plotting
     FASTF1_AVAILABLE = True
     # Configure FastF1 cache directory
     cache_path = os.path.join(settings.CACHE_DIR, "fastf1")
@@ -56,7 +57,7 @@ class FastF1Adapter:
                 s1_sec = row["Sector1Time"].total_seconds() if pd.notna(row["Sector1Time"]) else None
                 s2_sec = row["Sector2Time"].total_seconds() if pd.notna(row["Sector2Time"]) else None
                 s3_sec = row["Sector3Time"].total_seconds() if pd.notna(row["Sector3Time"]) else None
-                
+
                 results.append({
                     "lap_number": int(row["LapNumber"]),
                     "lap_time_sec": lap_sec,
@@ -85,11 +86,11 @@ class FastF1Adapter:
                     target_lap = driver_laps.pick_fastest()
             else:
                 target_lap = driver_laps.pick_fastest()
-                
+
             telem = target_lap.get_telemetry()
             if telem is None or telem.empty:
                 return []
-                
+
             # Downsample to avoid sending megabytes of dense raw sensors
             downsampled = telem.iloc[::downsample_step]
             samples = []

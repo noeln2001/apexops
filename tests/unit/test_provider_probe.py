@@ -1,7 +1,8 @@
-import pytest
 import requests
+
 from backend.app.models.operations import DataSource
 from operations.monitoring.provider_probe import ProviderHealthProbe
+
 
 def test_provider_health_probe_healthy(monkeypatch):
     source = DataSource(

@@ -1,9 +1,11 @@
-import time
 import logging
+import time
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Tuple
+from typing import Any, Dict, List, Tuple
+
 import requests
 from sqlalchemy.orm import Session
+
 from backend.app.models.operations import DataSource
 
 logger = logging.getLogger("apexops.monitoring.probe")

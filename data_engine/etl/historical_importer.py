@@ -1,13 +1,19 @@
-import time
 import logging
+import time
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict
+
 from sqlalchemy.orm import Session
+
 from backend.app.core.config import settings
-from backend.app.db.session import SessionLocal
-from backend.app.models.f1_core import Season, ChampionshipRule, Circuit, Constructor, Driver, DriverTeamAssignment
-from backend.app.models.f1_events import Race, Session as F1Session, SessionResult, QualifyingResult, SprintResult, DriverStanding, ConstructorStanding
-from backend.app.models.operations import IngestionRun, DataQualityIssue, DataSource
+from backend.app.models.f1_core import ChampionshipRule, Circuit, Constructor, Driver, DriverTeamAssignment, Season
+from backend.app.models.f1_events import (
+    ConstructorStanding,
+    DriverStanding,
+    Race,
+    SessionResult,
+)
+from backend.app.models.operations import IngestionRun
 from data_engine.adapters.jolpica_adapter import JolpicaAdapter
 
 logger = logging.getLogger("apexops.etl.importer")
@@ -49,7 +55,7 @@ class HistoricalImporter:
         """Imports or refreshes an entire championship season idempotently."""
         start_time = time.time()
         logger.info(f"Starting import for season {year}...")
-        
+
         # 1. Season record
         season = self.db.query(Season).filter(Season.year == year).first()
         if not season:
@@ -70,20 +76,20 @@ class HistoricalImporter:
         # 2. Calendar / Races
         calendar_races = self.adapter.fetch_calendar(year)
         ref_date = settings.REFERENCE_DATE # "2026-10-20"
-        
+
         races_imported = 0
         results_imported = 0
-        
+
         for r in calendar_races:
             round_num = int(r.get("round", 1))
             race_id = f"{year}-{round_num:02d}"
             race_name = r.get("raceName", f"Round {round_num}")
             date_str = r.get("date", "2026-01-01")
             time_str = r.get("time", "14:00:00Z")
-            
+
             circuit_data = r.get("Circuit", {})
             circuit_id = circuit_data.get("circuitId", "unknown")
-            
+
             # Ensure circuit exists
             if not self.db.query(Circuit).filter(Circuit.circuit_id == circuit_id).first():
                 loc = circuit_data.get("Location", {})
@@ -134,7 +140,7 @@ class HistoricalImporter:
                     for res in res_data["Results"]:
                         driver_info = res.get("Driver", {})
                         constructor_info = res.get("Constructor", {})
-                        
+
                         d_id = driver_info.get("driverId")
                         c_id = constructor_info.get("constructorId")
                         if not d_id or not c_id:
@@ -188,7 +194,7 @@ class HistoricalImporter:
                         time_obj = res.get("Time", {})
                         time_millis = int(time_obj.get("millis")) if time_obj.get("millis") else None
                         fastest_lap = res.get("FastestLap", {})
-                        
+
                         existing_result = self.db.query(SessionResult).filter(
                             SessionResult.race_id == race_id,
                             SessionResult.driver_id == d_id
@@ -220,7 +226,7 @@ class HistoricalImporter:
         # 4. Import Driver Standings
         driver_standings_data = self.adapter.fetch_driver_standings(year)
         latest_completed_round = max([r.round for r in self.db.query(Race).filter(Race.season_year == year, Race.status == "Completed").all()] or [0])
-        
+
         for ds in driver_standings_data:
             d_id = ds.get("Driver", {}).get("driverId")
             constructors = ds.get("Constructors", [])
@@ -271,7 +277,7 @@ class HistoricalImporter:
 
         duration = time.time() - start_time
         logger.info(f"Import for season {year} finished in {duration:.2f}s. Races: {len(calendar_races)}, Results: {results_imported}.")
-        
+
         # Log Ingestion Run
         ingest_run = IngestionRun(
             source_name="Jolpica",

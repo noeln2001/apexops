@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 from backend.app.core.config import settings
 from data_engine.adapters.base_adapter import BaseProviderAdapter
 
@@ -7,7 +8,7 @@ logger = logging.getLogger("apexops.adapter.jolpica")
 
 class JolpicaAdapter(BaseProviderAdapter):
     """Adapter for Jolpica F1 API (Ergast successor) providing historical and current championship data."""
-    
+
     def __init__(self):
         super().__init__(name="Jolpica", base_url=settings.JOLPICA_BASE_URL, timeout_sec=12)
 

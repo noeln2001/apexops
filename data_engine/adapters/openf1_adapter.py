@@ -1,5 +1,6 @@
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 from backend.app.core.config import settings
 from data_engine.adapters.base_adapter import BaseProviderAdapter
 

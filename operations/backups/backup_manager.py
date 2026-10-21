@@ -1,13 +1,14 @@
+import json
+import logging
 import os
 import re
-import json
 import shutil
 import sqlite3
 import time
-import logging
-from pathlib import Path
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from backend.app.core.config import settings
 
 logger = logging.getLogger("apexops.backups")
@@ -65,7 +66,7 @@ class BackupManager:
 
             size_bytes = os.path.getsize(dest_path)
             duration = round(time.time() - start_time, 3)
-            
+
             # Check PRAGMA integrity on the backup file
             verified = cls.verify_backup_integrity(dest_path)
 
@@ -117,7 +118,7 @@ class BackupManager:
         try:
             start_time = time.time()
             shutil.copy2(str(backup_path), sandbox_db)
-            
+
             # Mount isolated database and verify table counts & integrity
             conn = sqlite3.connect(sandbox_db)
             cursor = conn.cursor()
@@ -126,7 +127,7 @@ class BackupManager:
 
             cursor.execute("SELECT count(*) FROM sqlite_master WHERE type='table';")
             table_count = cursor.fetchone()[0]
-            
+
             cursor.execute("SELECT count(*) FROM races;")
             race_count = cursor.fetchone()[0]
             conn.close()

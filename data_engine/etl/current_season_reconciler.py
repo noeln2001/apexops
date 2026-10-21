@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime, timezone
-from typing import Dict, Any, List
+from typing import Any, Dict
+
 from sqlalchemy.orm import Session
+
 from backend.app.core.config import settings
-from backend.app.models.f1_core import Season
-from backend.app.models.f1_events import Race, DriverStanding, ConstructorStanding, SessionResult
+from backend.app.models.f1_events import DriverStanding, Race, SessionResult
 from backend.app.models.operations import DataQualityIssue, DataSource
 from data_engine.adapters.jolpica_adapter import JolpicaAdapter
 
@@ -26,9 +27,8 @@ class CurrentSeasonReconciler:
         """Runs validation for 2026 calendar and standings around 20 October 2026."""
         current_year = self.get_runtime_current_year()
         ref_date = settings.REFERENCE_DATE
-        
+
         races = self.db.query(Race).filter(Race.season_year == current_year).order_by(Race.round).all()
-        discrepancies = []
         validation_results = {
             "reference_date": ref_date,
             "season_year": current_year,

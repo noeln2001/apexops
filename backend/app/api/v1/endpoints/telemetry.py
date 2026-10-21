@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
 from typing import Optional
-from backend.app.db.session import get_db
-from backend.app.models.f1_events import Race
-from backend.app.models.f1_core import Driver
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
 from analytics.telemetry.telemetry_service import TelemetryService
+from backend.app.db.session import get_db
+from backend.app.models.f1_core import Driver
+from backend.app.models.f1_events import Race
 from data_engine.adapters.fastf1_adapter import FastF1Adapter
 
 router = APIRouter()
@@ -37,10 +39,10 @@ def get_lap_telemetry_comparison(
                 db_driver = db.query(Driver).filter(Driver.driver_id == driver_b).first()
                 code_a = da.code if da and da.code else driver_a.upper()[:3]
                 code_b = db_driver.code if db_driver and db_driver.code else driver_b.upper()[:3]
-                
+
                 samples_a = fastf1_adapter.extract_lap_telemetry(session, code_a, lap_a)
                 samples_b = fastf1_adapter.extract_lap_telemetry(session, code_b, lap_b)
-        except Exception as exc:
+        except Exception:
             pass
 
     # Use telemetry mathematical physical model if live session cache is unavailable
@@ -50,7 +52,7 @@ def get_lap_telemetry_comparison(
         samples_b = TelemetryService.generate_synthetic_telemetry(circuit_name, driver_b, 91.1)
 
     aligned = TelemetryService.align_telemetry_laps(samples_a, samples_b)
-    
+
     return {
         "race_id": race_id,
         "circuit_name": circuit_name,

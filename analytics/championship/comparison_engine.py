@@ -1,5 +1,7 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List
+
 from analytics.championship.scoring_rules import REMAINING_ROUNDS_2026, calculate_max_remaining_points
+
 
 class DriverComparisonEngine:
     """

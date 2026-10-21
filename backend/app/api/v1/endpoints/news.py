@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from typing import List, Optional
 from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from backend.app.db.session import get_db
 from backend.app.models.governance import NewsArticle
 from data_engine.adapters.news_adapter import NewsAdapter
@@ -20,7 +22,7 @@ def list_news(
 ):
     """Returns curated Formula 1 news, technical developments, and FIA regulatory bulletins."""
     query = db.query(NewsArticle)
-    
+
     if category:
         query = query.filter(NewsArticle.category == category)
     if status:
