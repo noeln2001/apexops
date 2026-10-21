@@ -1,0 +1,26 @@
+{
+  "name": "ApexOps — Formula 1 Intelligence & Championship Platform",
+  "short_name": "ApexOps",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b0e14",
+  "theme_color": "#e10600",
+  "description": "Enterprise Formula 1 race engineering, championship title scenarios, and trackside telemetry platform with offline standings.",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "48x48 72x72 96x96 128x128 192x192 256x256 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./f1-logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["sports", "analytics", "engineering"]
+}

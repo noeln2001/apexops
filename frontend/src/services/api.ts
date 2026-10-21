@@ -236,7 +236,18 @@ export async function testIsolatedRestore(filename: string): Promise<any> {
 
 // Championship Tracker & Max Verstappen Scenarios API Client
 export async function fetchChampionshipTracker(driverId: string = 'max_verstappen', season: number = 2026): Promise<any> {
-  return safeFetch(`${API_BASE}/championship/tracker?driver_id=${driverId}&season=${season}`, FALLBACK_CHAMPIONSHIP_TRACKER);
+  const result = await safeFetch(`${API_BASE}/championship/tracker?driver_id=${driverId}&season=${season}`, null);
+  if (result) {
+    try {
+      localStorage.setItem('apexops_standings_snapshot', JSON.stringify(result));
+    } catch {}
+    return result;
+  }
+  try {
+    const cached = localStorage.getItem('apexops_standings_snapshot');
+    if (cached) return JSON.parse(cached);
+  } catch {}
+  return FALLBACK_CHAMPIONSHIP_TRACKER;
 }
 
 export async function fetchTitleScenarios(driverId: string = 'max_verstappen'): Promise<any> {
