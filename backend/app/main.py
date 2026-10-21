@@ -2,11 +2,12 @@ import logging
 import os
 import time
 import uuid
+from collections import defaultdict
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.app.api.v1.api import api_router
@@ -136,6 +137,45 @@ async def add_process_time_and_correlation_id(request: Request, call_next):
             correlation_id=correlation_id,
             error_detail=error_detail
         )
+
+# Simple sliding window in-memory rate limiter for sensitive endpoints
+RATE_LIMIT_WINDOWS = defaultdict(list)
+RATE_LIMIT_RULES = {
+    "/api/v1/auth/login": (10, 60),      # max 10 requests per 60s per IP
+    "/api/v1/gallery/discover": (15, 60), # max 15 requests per 60s per IP
+    "/api/v1/gallery/verify-url": (20, 60), # max 20 requests per 60s per IP
+}
+
+@app.middleware("http")
+async def security_and_rate_limiting_middleware(request: Request, call_next):
+    # Rate limiting on sensitive endpoints
+    client_ip = request.client.host if request.client else "unknown"
+    path = request.url.path
+    if path in RATE_LIMIT_RULES and request.method == "POST":
+        max_requests, window_sec = RATE_LIMIT_RULES[path]
+        now = time.time()
+        key = f"{client_ip}:{path}"
+        recent_requests = [t for t in RATE_LIMIT_WINDOWS[key] if now - t < window_sec]
+        if len(recent_requests) >= max_requests:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests. Please slow down and try again later."}
+            )
+        recent_requests.append(now)
+        RATE_LIMIT_WINDOWS[key] = recent_requests
+
+    response = await call_next(request)
+
+    # Security Headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+
+    if settings.ENVIRONMENT.lower() == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+
+    return response
 
 @app.get("/health", tags=["Health"])
 @app.get(f"{settings.API_V1_PREFIX}/health", tags=["Health"])
