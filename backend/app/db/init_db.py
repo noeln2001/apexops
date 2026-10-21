@@ -1,17 +1,31 @@
 import logging
+from pathlib import Path
 
+from alembic.config import Config
+
+from alembic import command
 from backend.app.core.config import settings
 from backend.app.core.security import get_password_hash
-from backend.app.db.session import Base, SessionLocal, engine
+from backend.app.db.session import SessionLocal
 from backend.app.models.operations import User
 
 logger = logging.getLogger("apexops.db")
 
+
+def apply_migrations():
+    """Applies Alembic migrations up to head, compatible with SQLite and Postgres."""
+    root_dir = Path(__file__).resolve().parent.parent.parent.parent
+    alembic_ini = root_dir / "alembic.ini"
+    alembic_cfg = Config(str(alembic_ini))
+    alembic_cfg.set_main_option("script_location", str(root_dir / "alembic"))
+    command.upgrade(alembic_cfg, "head")
+
+
 def init_database():
-    """Initializes all database tables safely using SQLAlchemy metadata and seeds default admin user."""
-    logger.info("Initializing ApexOps database schema...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("ApexOps schema successfully verified and created.")
+    """Initializes all database tables safely using Alembic migrations and seeds default admin user."""
+    logger.info("Initializing ApexOps database schema via Alembic migrations...")
+    apply_migrations()
+    logger.info("ApexOps schema successfully migrated to head.")
 
     # Seed Admin User if not exists
     db = SessionLocal()
