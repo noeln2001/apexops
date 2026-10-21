@@ -4,11 +4,12 @@
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-19.3-61DAFB.svg?logo=react)](https://react.dev)
+[![React](https://img.shields.io/badge/React-19.3.1-61DAFB.svg?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6.svg?logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.3-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.13-5C3EE8.svg?logo=opencv)](https://opencv.org)
-[![Pytest](https://img.shields.io/badge/pytest-39%2F39%20PASS-success)]()
+[![Pytest](https://img.shields.io/badge/pytest-passing-success)]()
+[![Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 [![GitHub Repo](https://img.shields.io/badge/GitHub-noeln2001%2Fapexops-181717.svg?logo=github)](https://github.com/noeln2001/apexops)
 
